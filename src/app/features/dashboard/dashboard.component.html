@@ -1,0 +1,28 @@
+<div class="mb-6">
+  <h1 class="text-2xl font-bold text-gray-800 mb-2">Dashboard</h1>
+  <div class="flex items-center gap-2 text-gray-500 text-sm">
+    <span>Principal</span>
+    <span class="text-gray-300">›</span>
+    <span>Dashboard</span>
+  </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
+  @for (stat of stats; track stat.title) {
+    <p-card class="shadow-sm">
+      <div class="text-sm text-gray-500 mb-2">{{ stat.title }}</div>
+      <div class="text-3xl font-bold text-gray-800 mb-2">{{ stat.value }}</div>
+      <div class="text-sm" [ngClass]="stat.trendClass">{{ stat.trend }}</div>
+    </p-card>
+  }
+</div>
+
+<!-- Welcome Card -->
+<p-card class="shadow-sm">
+  <h2 class="text-xl font-semibold mb-4">Bem-vindo ao VendeX ERP!</h2>
+  <p class="text-gray-600 leading-relaxed">
+    Sistema completo de gestão para lojas. Use o menu lateral para navegar entre os módulos.
+    O sidebar pode ser recolhido clicando no botão de menu no topo.
+  </p>
+</p-card>

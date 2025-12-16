@@ -1,0 +1,304 @@
+<p-toast></p-toast>
+
+<div class="p-6">
+  <!-- Header -->
+  <div class="flex justify-between items-center mb-6">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-100">Emitir Nota Fiscal</h1>
+      <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+        {{ vendaSelecionada ? 'Preencha os dados para emissão' : 'Selecione uma venda para emitir nota fiscal' }}
+      </p>
+    </div>
+    <button
+      pButton
+      label="Voltar"
+      icon="pi pi-arrow-left"
+      class="p-button-outlined"
+      (click)="router.navigate(['/notas-fiscais'])"
+    ></button>
+  </div>
+
+  <!-- Lista de Vendas -->
+  @if (!vendaSelecionada) {
+    <p-card>
+      <p-table
+        [value]="vendas()"
+        [paginator]="true"
+        [rows]="10"
+        styleClass="p-datatable-sm"
+      >
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Número Venda</th>
+            <th>Data</th>
+            <th>Cliente</th>
+            <th>Valor Total</th>
+            <th>Forma Pagamento</th>
+            <th class="text-center">Ação</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-venda>
+          <tr>
+            <td>{{ venda.numeroVenda }}</td>
+            <td>{{ formatDate(venda.data) }}</td>
+            <td>
+              <div>{{ venda.clienteNome || 'Consumidor Final' }}</div>
+              @if (venda.clienteCpfCnpj) {
+                <div class="text-xs text-gray-500">{{ venda.clienteCpfCnpj }}</div>
+              }
+            </td>
+            <td class="font-semibold">R$ {{ formatCurrency(venda.valorTotal) }}</td>
+            <td>{{ venda.formaPagamento }}</td>
+            <td class="text-center">
+              <button
+                pButton
+                label="Emitir NF"
+                icon="pi pi-file"
+                class="p-button-sm"
+                (click)="selecionarVenda(venda)"
+              ></button>
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="6" class="text-center py-8">
+              <div class="text-gray-500">
+                <i class="pi pi-inbox text-4xl mb-3"></i>
+                <p>Nenhuma venda disponível para emissão de nota fiscal</p>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </p-card>
+  }
+
+  <!-- Formulário de Emissão -->
+  @if (vendaSelecionada) {
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Coluna Esquerda: Dados da Venda -->
+      <div class="lg:col-span-1">
+        <p-card>
+          <ng-template pTemplate="header">
+            <div class="p-4 border-b">
+              <h3 class="text-lg font-semibold">Dados da Venda</h3>
+            </div>
+          </ng-template>
+
+          <div class="space-y-3">
+            <div>
+              <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Número da Venda</label>
+              <p class="text-base font-semibold">{{ vendaSelecionada.numeroVenda }}</p>
+            </div>
+
+            <div>
+              <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Data</label>
+              <p class="text-base">{{ formatDate(vendaSelecionada.data) }}</p>
+            </div>
+
+            <div>
+              <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Forma de Pagamento</label>
+              <p class="text-base">{{ vendaSelecionada.formaPagamento }}</p>
+            </div>
+
+            <div>
+              <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Valor Total</label>
+              <p class="text-xl font-bold text-green-600">R$ {{ formatCurrency(vendaSelecionada.valorTotal) }}</p>
+            </div>
+          </div>
+
+          <ng-template pTemplate="footer">
+            <div class="border-t pt-4">
+              <h4 class="font-medium mb-2">Produtos:</h4>
+              <div class="space-y-2">
+                @for (produto of vendaSelecionada.produtos; track produto.nome) {
+                  <div class="flex justify-between text-sm">
+                    <span>{{ produto.quantidade }}x {{ produto.nome }}</span>
+                    <span class="font-medium">R$ {{ formatCurrency(produto.valorTotal) }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+          </ng-template>
+        </p-card>
+
+        <button
+          pButton
+          label="Voltar para Lista"
+          icon="pi pi-arrow-left"
+          class="p-button-outlined p-button-secondary w-full mt-4"
+          (click)="voltarParaLista()"
+        ></button>
+      </div>
+
+      <!-- Coluna Direita: Dados da Nota -->
+      <div class="lg:col-span-2">
+        <p-card>
+          <ng-template pTemplate="header">
+            <div class="p-4 border-b">
+              <h3 class="text-lg font-semibold">Dados da Nota Fiscal</h3>
+            </div>
+          </ng-template>
+
+          <div class="space-y-4">
+            <!-- Tipo de Nota -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Tipo de Nota Fiscal *
+              </label>
+              <p-dropdown
+                [(ngModel)]="tipoNota"
+                [options]="tiposOptions"
+                placeholder="Selecione o tipo"
+                class="w-full"
+              ></p-dropdown>
+            </div>
+
+            <!-- Dados do Cliente -->
+            <div class="border-t pt-4">
+              <h4 class="font-semibold mb-4 text-gray-700 dark:text-gray-300">Dados do Cliente</h4>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Nome / Razão Social {{ tipoNota === 'nfe' ? '*' : '' }}
+                  </label>
+                  <input
+                    pInputText
+                    [(ngModel)]="clienteNome"
+                    placeholder="Nome completo ou razão social"
+                    class="w-full"
+                  />
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    CPF / CNPJ {{ tipoNota === 'nfe' ? '*' : '' }}
+                  </label>
+                  <p-inputMask
+                    [(ngModel)]="clienteCpfCnpj"
+                    mask="999.999.999-99"
+                    placeholder="000.000.000-00"
+                    class="w-full"
+                  ></p-inputMask>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">E-mail</label>
+                  <input
+                    pInputText
+                    [(ngModel)]="clienteEmail"
+                    type="email"
+                    placeholder="email@exemplo.com"
+                    class="w-full"
+                  />
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Telefone</label>
+                  <p-inputMask
+                    [(ngModel)]="clienteTelefone"
+                    mask="(99) 99999-9999"
+                    placeholder="(00) 00000-0000"
+                    class="w-full"
+                  ></p-inputMask>
+                </div>
+              </div>
+
+              @if (tipoNota === 'nfe') {
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                  <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Endereço</label>
+                    <input
+                      pInputText
+                      [(ngModel)]="clienteEndereco"
+                      placeholder="Rua, número, complemento"
+                      class="w-full"
+                    />
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">CEP</label>
+                    <p-inputMask
+                      [(ngModel)]="clienteCEP"
+                      mask="99999-999"
+                      placeholder="00000-000"
+                      class="w-full"
+                    ></p-inputMask>
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Cidade</label>
+                    <input
+                      pInputText
+                      [(ngModel)]="clienteCidade"
+                      placeholder="Nome da cidade"
+                      class="w-full"
+                    />
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">UF</label>
+                    <input
+                      pInputText
+                      [(ngModel)]="clienteUF"
+                      placeholder="SP"
+                      maxlength="2"
+                      class="w-full"
+                    />
+                  </div>
+                </div>
+              }
+            </div>
+
+            <!-- Observações -->
+            <div class="border-t pt-4">
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Observações / Informações Adicionais
+              </label>
+              <textarea
+                pInputText
+                [(ngModel)]="observacoes"
+                rows="3"
+                placeholder="Informações adicionais que aparecerão na nota fiscal"
+                class="w-full"
+              ></textarea>
+            </div>
+
+            <!-- Informações Importantes -->
+            <div class="bg-blue-50 dark:bg-blue-900 p-4 rounded-lg">
+              <h5 class="font-medium text-blue-900 dark:text-blue-100 mb-2">📋 Informações Importantes:</h5>
+              <ul class="text-sm text-blue-800 dark:text-blue-200 space-y-1">
+                <li>• NFC-e: Cupom fiscal eletrônico, ideal para vendas ao consumidor final</li>
+                <li>• NF-e: Nota fiscal eletrônica, obrigatória para vendas com CPF/CNPJ</li>
+                <li>• NFS-e: Nota fiscal de serviço eletrônica</li>
+                <li>• Os impostos serão calculados automaticamente pelo sistema</li>
+                <li>• A nota será enviada para autorização na SEFAZ</li>
+              </ul>
+            </div>
+          </div>
+
+          <ng-template pTemplate="footer">
+            <div class="flex justify-end gap-2 pt-4 border-t">
+              <button
+                pButton
+                label="Cancelar"
+                icon="pi pi-times"
+                class="p-button-outlined p-button-secondary"
+                (click)="voltarParaLista()"
+              ></button>
+              <button
+                pButton
+                label="Emitir Nota Fiscal"
+                icon="pi pi-check"
+                class="p-button-success"
+                (click)="emitirNota()"
+              ></button>
+            </div>
+          </ng-template>
+        </p-card>
+      </div>
+    </div>
+  }
+</div>

@@ -1,0 +1,388 @@
+<p-toast></p-toast>
+
+<div class="mb-6">
+  <div class="flex items-center justify-between mb-2">
+    <h1 class="text-2xl font-bold text-gray-800">Controle de Estoque</h1>
+    <button
+      pButton
+      label="Novo Produto"
+      icon="pi pi-plus"
+      routerLink="/produtos/novo"
+    ></button>
+  </div>
+  <div class="flex items-center gap-2 text-gray-500 text-sm">
+    <span>Estoque</span>
+    <span class="text-gray-300">›</span>
+    <span>Listagem</span>
+  </div>
+</div>
+
+<!-- Alertas de Estoque Baixo -->
+@if (alertas().length > 0) {
+  <p-card class="mb-6 bg-orange-50 border-orange-200">
+    <div class="flex items-start gap-3">
+      <i class="pi pi-exclamation-triangle text-orange-600 text-2xl"></i>
+      <div class="flex-1">
+        <h3 class="font-semibold text-gray-800 mb-2">Alertas de Estoque</h3>
+        <div class="space-y-2">
+          @for (alerta of alertas().slice(0, 5); track alerta.produto.id) {
+            <div class="flex items-center justify-between p-2 bg-white rounded">
+              <div class="flex items-center gap-2">
+                <p-tag [value]="alerta.urgencia.toUpperCase()" [severity]="getUrgenciaSeverity(alerta.urgencia)"></p-tag>
+                <span class="font-medium">{{ alerta.produto.nome }}</span>
+                <span class="text-sm text-gray-500">({{ alerta.produto.codigoInterno }})</span>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="text-sm text-gray-600">
+                  Estoque: <strong>{{ alerta.produto.estoque }}</strong> / Mínimo: <strong>{{ alerta.produto.estoqueMinimo }}</strong>
+                </span>
+                <button
+                  pButton
+                  label="Entrada"
+                  icon="pi pi-plus"
+                  class="p-button-sm p-button-success"
+                  (click)="abrirMovimentacao('entrada', alerta.produto)"
+                ></button>
+              </div>
+            </div>
+          }
+        </div>
+        @if (alertas().length > 5) {
+          <p class="text-sm text-gray-500 mt-2">E mais {{ alertas().length - 5 }} produto(s) com estoque baixo...</p>
+        }
+      </div>
+    </div>
+  </p-card>
+}
+
+<!-- Filtros -->
+<p-card class="mb-6">
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div class="md:col-span-2">
+      <label class="block text-sm font-medium text-gray-700 mb-2">Buscar</label>
+      <span class="p-input-icon-left w-full">
+        <i class="pi pi-search"></i>
+        <input
+          pInputText
+          type="text"
+          [(ngModel)]="searchTerm"
+          (ngModelChange)="aplicarFiltros()"
+          placeholder="Nome, código ou código de barras..."
+          class="w-full"
+        />
+      </span>
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">Categoria</label>
+      <p-dropdown
+        [(ngModel)]="selectedCategoria"
+        [options]="categorias()"
+        optionLabel="label"
+        optionValue="value"
+        (onChange)="aplicarFiltros()"
+        placeholder="Todas"
+        class="w-full"
+        [styleClass]="'w-full'"
+      ></p-dropdown>
+    </div>
+
+    <div class="flex flex-col gap-2 justify-end">
+      <button
+        pButton
+        [label]="showEstoqueBaixo ? 'Mostrar Todos' : 'Estoque Baixo'"
+        [icon]="showEstoqueBaixo ? 'pi pi-times' : 'pi pi-filter'"
+        [class]="showEstoqueBaixo ? 'p-button-warning' : 'p-button-outlined'"
+        (click)="showEstoqueBaixo = !showEstoqueBaixo; showSemEstoque = false; aplicarFiltros()"
+        class="w-full"
+      ></button>
+      <button
+        pButton
+        [label]="showSemEstoque ? 'Mostrar Todos' : 'Sem Estoque'"
+        [icon]="showSemEstoque ? 'pi pi-times' : 'pi pi-filter'"
+        [class]="showSemEstoque ? 'p-button-danger' : 'p-button-outlined'"
+        (click)="showSemEstoque = !showSemEstoque; showEstoqueBaixo = false; aplicarFiltros()"
+        class="w-full"
+      ></button>
+    </div>
+  </div>
+</p-card>
+
+<!-- Tabela de Produtos -->
+<p-card>
+  <p-table
+    [value]="produtosFiltrados()"
+    [paginator]="true"
+    [rows]="20"
+    [rowsPerPageOptions]="[10, 20, 50, 100]"
+    [showCurrentPageReport]="true"
+    currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} produtos"
+    [globalFilterFields]="['nome', 'codigoInterno', 'codigoBarras']"
+    styleClass="p-datatable-sm"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th pSortableColumn="codigoInterno">
+          Código <p-sortIcon field="codigoInterno"></p-sortIcon>
+        </th>
+        <th pSortableColumn="nome">
+          Produto <p-sortIcon field="nome"></p-sortIcon>
+        </th>
+        <th pSortableColumn="categoria">
+          Categoria <p-sortIcon field="categoria"></p-sortIcon>
+        </th>
+        <th class="text-right" pSortableColumn="estoque">
+          Estoque Atual <p-sortIcon field="estoque"></p-sortIcon>
+        </th>
+        <th class="text-right" pSortableColumn="estoqueMinimo">
+          Estoque Mín. <p-sortIcon field="estoqueMinimo"></p-sortIcon>
+        </th>
+        <th>Status</th>
+        <th class="text-right" pSortableColumn="precoCusto">
+          Preço Custo <p-sortIcon field="precoCusto"></p-sortIcon>
+        </th>
+        <th class="text-right" pSortableColumn="precoVenda">
+          Preço Venda <p-sortIcon field="precoVenda"></p-sortIcon>
+        </th>
+        <th class="text-center">Ações</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-produto>
+      <tr>
+        <td>
+          <div class="font-mono text-sm">{{ produto.codigoInterno }}</div>
+          @if (produto.codigoBarras) {
+            <div class="text-xs text-gray-500">{{ produto.codigoBarras }}</div>
+          }
+        </td>
+        <td>
+          <div class="font-medium">{{ produto.nome }}</div>
+          <div class="text-xs text-gray-500">{{ produto.unidadeMedida }}</div>
+        </td>
+        <td>
+          <span class="text-sm">{{ produto.categoria }}</span>
+        </td>
+        <td class="text-right">
+          <span class="font-semibold">{{ produto.estoque }}</span>
+        </td>
+        <td class="text-right">
+          <span class="text-sm text-gray-600">{{ produto.estoqueMinimo }}</span>
+        </td>
+        <td>
+          <p-tag
+            [value]="getEstoqueStatus(produto).label"
+            [severity]="getEstoqueStatus(produto).severity"
+          ></p-tag>
+        </td>
+        <td class="text-right">
+          <span class="text-sm">R$ {{ formatCurrency(produto.precoCusto) }}</span>
+        </td>
+        <td class="text-right">
+          <span class="text-sm font-medium">R$ {{ formatCurrency(produto.precoVenda) }}</span>
+        </td>
+        <td>
+          <div class="flex gap-1 justify-center">
+            <button
+              pButton
+              icon="pi pi-plus"
+              class="p-button-rounded p-button-success p-button-sm p-button-text"
+              pTooltip="Entrada"
+              tooltipPosition="top"
+              (click)="abrirMovimentacao('entrada', produto)"
+            ></button>
+            <button
+              pButton
+              icon="pi pi-minus"
+              class="p-button-rounded p-button-warning p-button-sm p-button-text"
+              pTooltip="Saída"
+              tooltipPosition="top"
+              (click)="abrirMovimentacao('saida', produto)"
+            ></button>
+            <button
+              pButton
+              icon="pi pi-pencil"
+              class="p-button-rounded p-button-info p-button-sm p-button-text"
+              pTooltip="Ajuste"
+              tooltipPosition="top"
+              (click)="abrirMovimentacao('ajuste', produto)"
+            ></button>
+            <button
+              pButton
+              icon="pi pi-history"
+              class="p-button-rounded p-button-secondary p-button-sm p-button-text"
+              pTooltip="Histórico"
+              tooltipPosition="top"
+              (click)="verHistorico(produto)"
+            ></button>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="9" class="text-center py-8">
+          <div class="flex flex-col items-center gap-2 text-gray-500">
+            <i class="pi pi-inbox text-4xl"></i>
+            <p>Nenhum produto encontrado</p>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</p-card>
+
+<!-- Dialog de Movimentação -->
+<p-dialog
+  [(visible)]="showMovimentacaoDialog"
+  [modal]="true"
+  [style]="{ width: '500px' }"
+  [draggable]="false"
+  [resizable]="false"
+>
+  <ng-template pTemplate="header">
+    <h3 class="text-lg font-semibold">
+      @if (tipoMovimentacao === 'entrada') {
+        <i class="pi pi-plus-circle text-green-600 mr-2"></i>Entrada de Estoque
+      }
+      @if (tipoMovimentacao === 'saida') {
+        <i class="pi pi-minus-circle text-orange-600 mr-2"></i>Saída de Estoque
+      }
+      @if (tipoMovimentacao === 'ajuste') {
+        <i class="pi pi-pencil text-blue-600 mr-2"></i>Ajuste de Estoque
+      }
+    </h3>
+  </ng-template>
+
+  @if (produtoSelecionado) {
+    <div class="space-y-4">
+      <!-- Info do Produto -->
+      <div class="p-3 bg-gray-50 rounded">
+        <div class="font-semibold">{{ produtoSelecionado.nome }}</div>
+        <div class="text-sm text-gray-600">Código: {{ produtoSelecionado.codigoInterno }}</div>
+        <div class="text-sm text-gray-600">Estoque Atual: <strong>{{ produtoSelecionado.estoque }}</strong> {{ produtoSelecionado.unidadeMedida }}</div>
+      </div>
+
+      <!-- Formulário Entrada -->
+      @if (tipoMovimentacao === 'entrada') {
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Quantidade *</label>
+          <p-inputNumber
+            [(ngModel)]="quantidade"
+            [min]="1"
+            [showButtons]="true"
+            class="w-full"
+            [inputStyleClass]="'w-full'"
+          ></p-inputNumber>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Preço de Custo</label>
+          <p-inputNumber
+            [(ngModel)]="precoCusto"
+            mode="currency"
+            currency="BRL"
+            locale="pt-BR"
+            [min]="0"
+            class="w-full"
+            [inputStyleClass]="'w-full'"
+          ></p-inputNumber>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Fornecedor</label>
+          <input
+            pInputText
+            type="text"
+            [(ngModel)]="fornecedor"
+            class="w-full"
+          />
+        </div>
+      }
+
+      <!-- Formulário Saída -->
+      @if (tipoMovimentacao === 'saida') {
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Quantidade *</label>
+          <p-inputNumber
+            [(ngModel)]="quantidade"
+            [min]="1"
+            [max]="produtoSelecionado.estoque"
+            [showButtons]="true"
+            class="w-full"
+            [inputStyleClass]="'w-full'"
+          ></p-inputNumber>
+          <small class="text-gray-500">Máximo: {{ produtoSelecionado.estoque }}</small>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Motivo *</label>
+          <input
+            pInputText
+            type="text"
+            [(ngModel)]="motivo"
+            placeholder="Ex: Perda, Avaria, Doação..."
+            class="w-full"
+          />
+        </div>
+      }
+
+      <!-- Formulário Ajuste -->
+      @if (tipoMovimentacao === 'ajuste') {
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Quantidade Nova *</label>
+          <p-inputNumber
+            [(ngModel)]="quantidadeNova"
+            [min]="0"
+            [showButtons]="true"
+            class="w-full"
+            [inputStyleClass]="'w-full'"
+          ></p-inputNumber>
+          <small class="text-gray-500">
+            Diferença: {{ quantidadeNova - produtoSelecionado.estoque > 0 ? '+' : '' }}{{ quantidadeNova - produtoSelecionado.estoque }}
+          </small>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Motivo *</label>
+          <input
+            pInputText
+            type="text"
+            [(ngModel)]="motivo"
+            placeholder="Ex: Balanço, Correção..."
+            class="w-full"
+          />
+        </div>
+      }
+
+      <!-- Observações (todos os tipos) -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Observações</label>
+        <textarea
+          pInputTextarea
+          [(ngModel)]="observacao"
+          rows="3"
+          class="w-full"
+          placeholder="Informações adicionais (opcional)"
+        ></textarea>
+      </div>
+    </div>
+  }
+
+  <ng-template pTemplate="footer">
+    <button
+      pButton
+      label="Cancelar"
+      icon="pi pi-times"
+      class="p-button-text"
+      (click)="showMovimentacaoDialog = false"
+    ></button>
+    <button
+      pButton
+      label="Salvar"
+      icon="pi pi-check"
+      (click)="salvarMovimentacao()"
+    ></button>
+  </ng-template>
+</p-dialog>

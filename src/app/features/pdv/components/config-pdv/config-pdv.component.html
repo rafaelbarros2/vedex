@@ -1,0 +1,151 @@
+<div class="min-h-screen bg-gray-100 dark:bg-gray-900 font-sans text-gray-800 dark:text-gray-200 p-4 sm:p-6 lg:p-8">
+        
+        <main class="max-w-5xl mx-auto">
+          <header class="mb-8">
+            <h1 class="text-4xl font-bold text-gray-900 dark:text-white">Configurações do PDV</h1>
+            <p class="text-gray-500 dark:text-gray-400 mt-2">Ajuste as preferências, regras e aparência do seu Ponto de Venda.</p>
+          </header>
+
+          <!-- Navegação por Abas -->
+          <div class="mb-6">
+            <nav class="flex space-x-2 sm:space-x-4 border-b border-gray-200 dark:border-gray-700">
+              <button  (click)="setActiveTab('geral')" class="tab-link" [class.active-tab]="activeTab() === 'geral'">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" /></svg>
+                <span>Geral</span>
+              </button >
+              <button  (click)="setActiveTab('caixa')" class="tab-link" [class.active-tab]="activeTab() === 'caixa'">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5 4a3 3 0 00-3 3v6a3 3 0 003 3h10a3 3 0 003-3V7a3 3 0 00-3-3H5zm-1 9v-1h5v2H5a1 1 0 01-1-1zm7 1h4a1 1 0 001-1v-1h-5v2zm0-4h5V8h-5v2zM9 8H4v2h5V8z" clip-rule="evenodd" /></svg>
+                <span>Caixa</span>
+              </button >
+              <button  (click)="setActiveTab('impressao')" class="tab-link" [class.active-tab]="activeTab() === 'impressao'">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5 4v3H4a2 2 0 00-2 2v6a2 2 0 002 2h12a2 2 0 002-2V9a2 2 0 00-2-2h-1V4a2 2 0 00-2-2H7a2 2 0 00-2 2zm8 0H7v3h6V4zm0 8H7v4h6v-4z" clip-rule="evenodd" /></svg>
+                <span>Impressão</span>
+              </button >
+              <button  (click)="setActiveTab('pagamento')" class="tab-link" [class.active-tab]="activeTab() === 'pagamento'">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z" /><path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd" /></svg>
+                <span>Pagamentos</span>
+              </button >
+            </nav>
+          </div>
+
+          <!-- Conteúdo das Abas -->
+          <div class="bg-white dark:bg-gray-800/50 rounded-xl shadow-lg p-6 sm:p-8">
+              <!-- Aba Geral -->
+              @if(activeTab() === 'geral') {
+                <div class="animate-fade-in space-y-8">
+                    <div class="card-section">
+                      <h2 class="card-title">Informações da Loja</h2>
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+                        <div class="form-group"><label>Nome da Loja</label><input type="text" [(ngModel)]="configuracoes().loja.nome" class="form-input"></div>
+                        <div class="form-group"><label>CNPJ</label><input type="text" [(ngModel)]="configuracoes().loja.cnpj" class="form-input"></div>
+                        <div class="form-group md:col-span-2"><label>Endereço</label><input type="text" [(ngModel)]="configuracoes().loja.endereco" class="form-input"></div>
+                      </div>
+                    </div>
+                    <div class="card-section">
+                      <h2 class="card-title">Aparência</h2>
+                      <div class="flex items-center justify-between">
+                        <div class="flex flex-col"><span class="font-medium text-gray-700 dark:text-gray-300">Tema do sistema</span><p class="form-help">Escolha entre o tema claro ou escuro.</p></div>
+                        <div class="flex items-center gap-1 rounded-lg p-1 bg-gray-100 dark:bg-gray-700/50">
+                            <button  (click)="setTema('claro')" class="theme-btn" [class.active-theme]="configuracoes().aparencia.tema === 'claro'">☀️ Claro</button >
+                            <button  (click)="setTema('escuro')" class="theme-btn" [class.active-theme]="configuracoes().aparencia.tema === 'escuro'">🌙 Escuro</button >
+                        </div>
+                      </div>
+                    </div>
+                </div>
+              }
+
+              <!-- Aba Caixa -->
+              @if(activeTab() === 'caixa') {
+                <div class="animate-fade-in space-y-8">
+                    <div class="card-section">
+                      <h2 class="card-title">Operação do Caixa</h2>
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+                        <div class="form-group"><label>Valor de abertura (R$)</label><input type="number" [(ngModel)]="configuracoes().caixa.valorAbertura" class="form-input"></div>
+                        <div class="form-group"><label>Limite para sangria (R$)</label><input type="number" [(ngModel)]="configuracoes().caixa.limiteSangria" class="form-input"><p class="form-help">Alerta de sangria ao atingir este valor.</p></div>
+                        <div class="form-group"><label>Número do caixa/terminal</label><input type="number" [(ngModel)]="configuracoes().caixa.numeroCaixa" class="form-input"></div>
+                        <div class="form-group"><label>Operador Padrão</label>
+                            <select [(ngModel)]="configuracoes().caixa.operadorPadrao" class="form-input">
+                                @for(op of operadores(); track op.id) { <option [value]="op.nome">{{ op.nome }}</option> }
+                            </select>
+                        </div>
+                        <div class="toggle-group md:col-span-2"><label>Permitir troca de operador</label><label class="toggle-switch"><input type="checkbox" [(ngModel)]="configuracoes().caixa.permitirTrocaOperador"><span class="slider"></span></label></div>
+                      </div>
+                    </div>
+                    <div class="card-section">
+                      <h2 class="card-title">Controles e Segurança</h2>
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
+                        <div class="toggle-group"><label>Vender com caixa fechado</label><label class="toggle-switch"><input type="checkbox" [(ngModel)]="configuracoes().caixa.permitirVendaCaixaFechado"><span class="slider"></span></label></div>
+                        <div class="toggle-group"><label>Vender com estoque negativo</label><label class="toggle-switch"><input type="checkbox" [(ngModel)]="configuracoes().caixa.permitirVendaEstoqueNegativo"><span class="slider"></span></label></div>
+                        <div class="toggle-group"><label>Exigir senha para cancelamento</label><label class="toggle-switch"><input type="checkbox" [(ngModel)]="configuracoes().caixa.exigirSenhaCancelamento"><span class="slider"></span></label></div>
+                        <div class="toggle-group"><label>Bloquear venda sem preço</label><label class="toggle-switch"><input type="checkbox" [(ngModel)]="configuracoes().caixa.bloquearVendaSemPreco"><span class="slider"></span></label></div>
+                        <div class="toggle-group md:col-span-2"><label>Exigir supervisor para descontos acima de:</label>
+                          <div class="flex items-center gap-3">
+                            <input type="number" [disabled]="!configuracoes().caixa.exigirSupervisorDesconto" [(ngModel)]="configuracoes().caixa.percentualDescontoSupervisor" class="form-input w-24 text-center disabled:opacity-50"><span>%</span>
+                            <label class="toggle-switch"><input type="checkbox" [(ngModel)]="configuracoes().caixa.exigirSupervisorDesconto"><span class="slider"></span></label>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                </div>
+              }
+              
+              <!-- Aba Impressão -->
+              @if(activeTab() === 'impressao') {
+                <div class="animate-fade-in space-y-8">
+                     <div class="card-section">
+                        <h2 class="card-title">Configurações da Impressora</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+                          <div class="form-group"><label>Tipo de impressora</label><select class="form-input" [(ngModel)]="configuracoes().impressao.tipoImpressora"><option value="termica">Térmica</option><option value="matricial">Matricial</option><option value="usb">USB</option><option value="rede">Rede</option></select></div>
+                          <div class="form-group"><label>Tamanho do papel</label><select class="form-input" [(ngModel)]="configuracoes().impressao.tamanhoPapel"><option value="58mm">58mm</option><option value="80mm">80mm</option></select></div>
+                          <div class="form-group"><label>Porta (COM, USB, IP)</label><input type="text" [(ngModel)]="configuracoes().impressao.portaComunicacao" class="form-input"></div>
+                          <div class="form-group"><label>Modelo da impressora</label><input type="text" [(ngModel)]="configuracoes().impressao.modeloImpressora" class="form-input"></div>
+                          <div class="form-group md:col-span-2"><label>Número de vias do cupom</label><input type="number" [(ngModel)]="configuracoes().impressao.numeroVias" class="form-input w-full md:w-1/2"></div>
+                        </div>
+                      </div>
+                      <div class="card-section">
+                        <h2 class="card-title">Layout do Cupom</h2>
+                        <div class="space-y-5">
+                            <div class="form-group"><label>URL do Logo da Empresa</label><input type="text" placeholder="https://..." [(ngModel)]="configuracoes().impressao.logoEmpresaUrl" class="form-input"></div>
+                            <div class="form-group"><label>Mensagem no rodapé do recibo</label><textarea rows="3" [(ngModel)]="configuracoes().impressao.mensagemRodape" class="form-input"></textarea></div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8">
+                              <div class="toggle-group"><label>Imprimir após venda</label><label class="toggle-switch"><input type="checkbox" [(ngModel)]="configuracoes().impressao.autoPrint"><span class="slider"></span></label></div>
+                              <div class="toggle-group"><label>Mostrar vendedor no cupom</label><label class="toggle-switch"><input type="checkbox" [(ngModel)]="configuracoes().impressao.mostrarVendedorCupom"><span class="slider"></span></label></div>
+                              <div class="toggle-group"><label>Mostrar forma de pagamento</label><label class="toggle-switch"><input type="checkbox" [(ngModel)]="configuracoes().impressao.mostrarFormaPagamento"><span class="slider"></span></label></div>
+                            </div>
+                        </div>
+                      </div>
+                </div>
+              }
+
+              <!-- Aba Pagamento -->
+              @if(activeTab() === 'pagamento') {
+                <div class="animate-fade-in">
+                  <div class="card-section">
+                    <h2 class="card-title">Formas de Pagamento Ativas</h2>
+                    <p class="form-help -mt-4 mb-6">Ative ou desative as formas de pagamento que sua loja aceita.</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5">
+                      <div class="toggle-group"><label>Dinheiro 💵</label><label class="toggle-switch"><input type="checkbox" [(ngModel)]="configuracoes().pagamento.aceitaDinheiro"><span class="slider"></span></label></div>
+                      <div class="toggle-group"><label>Cartão de Débito</label><label class="toggle-switch"><input type="checkbox" [(ngModel)]="configuracoes().pagamento.aceitaCartaoDebito"><span class="slider"></span></label></div>
+                      <div class="toggle-group"><label>Cartão de Crédito</label><label class="toggle-switch"><input type="checkbox" [(ngModel)]="configuracoes().pagamento.aceitaCartaoCredito"><span class="slider"></span></label></div>
+                      <div class="toggle-group"><label>PIX ✨</label><label class="toggle-switch"><input type="checkbox" [(ngModel)]="configuracoes().pagamento.aceitaPix"><span class="slider"></span></label></div>
+                      <div class="toggle-group"><label>Vale/Ticket</label><label class="toggle-switch"><input type="checkbox" [(ngModel)]="configuracoes().pagamento.aceitaValeTicket"><span class="slider"></span></label></div>
+                      <div class="toggle-group"><label>Crediário Próprio</label><label class="toggle-switch"><input type="checkbox" [(ngModel)]="configuracoes().pagamento.aceitaCrediario"><span class="slider"></span></label></div>
+                      <div class="toggle-group"><label>Boleto</label><label class="toggle-switch"><input type="checkbox" [(ngModel)]="configuracoes().pagamento.aceitaBoleto"><span class="slider"></span></label></div>
+                    </div>
+                  </div>
+                </div>
+              }
+              
+              <footer class="flex items-center justify-end gap-3 mt-8 border-t border-gray-200 dark:border-gray-700/50 pt-6">
+                <button  (click)="restaurarPadroes()" class="btn-secondary">Restaurar Padrões</button >
+                <button  (click)="salvarConfiguracoes()" class="btn-primary">Salvar Alterações</button >
+              </footer>
+            </div>
+        </main>
+      </div>
+      
+      @if(saveMessageVisible()) {
+        <div class="fixed bottom-8 right-8 bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-5 py-3 rounded-lg shadow-2xl transition-all duration-300 animate-fade-in-out">
+          <span class="font-semibold">✓ Configurações salvas com sucesso!</span>
+        </div>
+      }

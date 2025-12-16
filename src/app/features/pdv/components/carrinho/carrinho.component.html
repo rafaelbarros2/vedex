@@ -1,0 +1,151 @@
+<aside class="bg-white border-l border-gray-200 flex flex-col shadow-lg h-full">
+  <!-- Cabeçalho do Carrinho -->
+  <div class="p-5 border-b border-gray-200">
+    <h2 class="text-lg font-bold text-gray-800">Carrinho de Compras</h2>
+    <p class="text-sm text-gray-500">Venda {{ numeroVenda }}</p>
+  </div>
+
+  <!-- Lista de Itens ou Estado Vazio -->
+  @if (items.length > 0) {
+    <div class="flex-1 p-4 overflow-y-auto space-y-3">
+      @for (item of items; track item.produtoId) {
+        <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 flex items-center gap-3 hover:bg-gray-100 transition-colors">
+          <!-- Imagem/Emoji do Produto -->
+          <div class="w-14 h-14 bg-white rounded-md flex items-center justify-center text-3xl border shadow-sm">
+            {{ item.emoji }}
+          </div>
+
+          <!-- Informações do Produto -->
+          <div class="flex-1">
+            <div class="text-sm font-semibold text-gray-800">{{ item.nome }}</div>
+            <div class="text-xs text-gray-500">R$ {{ formatPrice(item.preco) }} cada</div>
+
+            <!-- Controles de Quantidade -->
+            <div class="flex items-center gap-2 mt-2">
+              <p-button
+                icon="pi pi-minus"
+                size="small"
+                severity="secondary"
+                class="quantity-btn"
+                (onClick)="onUpdateQuantity(item, -1)"
+              />
+              <span class="font-semibold text-center w-8 text-gray-800">{{ item.quantidade }}</span>
+              <p-button
+                icon="pi pi-plus"
+                size="small"
+                severity="secondary"
+                class="quantity-btn"
+                (onClick)="onUpdateQuantity(item, 1)"
+              />
+            </div>
+          </div>
+
+          <!-- Preço Total e Remover -->
+          <div class="text-right">
+            <div class="font-bold text-blue-600 mb-2">
+              R$ {{ formatPrice(item.preco * item.quantidade) }}
+            </div>
+            <p-button
+              icon="pi pi-trash"
+              size="small"
+              severity="danger"
+              text
+              (onClick)="onRemoveItem(item.produtoId)"
+              class="remove-btn"
+            />
+          </div>
+        </div>
+      }
+    </div>
+  } @else {
+    <!-- Estado Vazio -->
+    <div class="flex-1 flex flex-col items-center justify-center text-center text-gray-500 p-5">
+      <div class="text-7xl mb-4 opacity-30">🛒</div>
+      <h3 class="font-semibold text-lg text-gray-700 mb-2">Seu carrinho está vazio</h3>
+      <p class="text-sm">Adicione produtos da lista ao lado para começar uma nova venda.</p>
+    </div>
+  }
+
+  <!-- Rodapé com Totais e Ações -->
+  <div class="p-5 border-t-2 border-gray-200 bg-gray-50">
+    <!-- Resumo da Venda -->
+    <div class="space-y-2 text-sm mb-4">
+      <div class="flex justify-between items-center">
+        <span class="text-gray-600">Subtotal ({{ totalItems() }} itens)</span>
+        <span class="font-semibold">R$ {{ formatPrice(subtotal()) }}</span>
+      </div>
+      <div class="flex justify-between items-center">
+        <span class="text-gray-600">Desconto</span>
+        <span class="font-semibold text-green-600">R$ 0,00</span>
+      </div>
+    </div>
+
+    <p-divider class="my-4" />
+
+    <!-- Total Final -->
+    <div class="flex justify-between items-center mb-4">
+      <span class="text-lg font-bold text-gray-800">Total</span>
+      <span class="text-2xl font-bold text-green-600">R$ {{ formatPrice(total()) }}</span>
+    </div>
+
+    <!-- Botão Principal de Finalizar -->
+    <p-button
+      label="💳 Finalizar Venda (F2)"
+      severity="success"
+      size="large"
+      class="w-full mb-3 finalize-btn"
+      [disabled]="items.length === 0"
+      (onClick)="onFinalizeSale()"
+    />
+
+    <!-- Botões de Forma de Pagamento -->
+    <div class="grid grid-cols-2 gap-3 mb-3">
+      <p-button
+        label="💵 Dinheiro"
+        severity="secondary"
+        outlined
+        size="small"
+        class="payment-btn"
+        [disabled]="items.length === 0"
+        (onClick)="onPaymentSelect('dinheiro')"
+      />
+      <p-button
+        label="💳 Cartão"
+        severity="secondary"
+        outlined
+        size="small"
+        class="payment-btn"
+        [disabled]="items.length === 0"
+        (onClick)="onPaymentSelect('cartao')"
+      />
+    </div>
+
+    <!-- Ações Secundárias -->
+    <div class="flex gap-2">
+      <p-button
+        label="% Desconto"
+        text
+        size="small"
+        class="flex-1 action-btn"
+        [disabled]="items.length === 0"
+        (onClick)="onRequestDiscount()"
+      />
+      <p-button
+        label="👤 Cliente"
+        text
+        size="small"
+        class="flex-1 action-btn"
+        (onClick)="onRequestCustomer()"
+      />
+      <p-button
+        label="🗑️ Limpar"
+        text
+        size="small"
+        severity="danger"
+        class="flex-1 action-btn"
+        [disabled]="items.length === 0"
+        (onClick)="onClearCart()"
+      />
+    </div>
+  </div>
+</aside>

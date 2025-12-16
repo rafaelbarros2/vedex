@@ -1,0 +1,23 @@
+@import "tailwindcss" reference;
+
+/* Custom styles for product grid */
+::ng-deep .p-inputtext {
+  @apply w-full border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-0;
+}
+
+.product-card {
+  transition: all 0.2s ease-in-out;
+}
+
+.product-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.product-emoji {
+  transition: background-color 0.2s ease-in-out;
+}
+
+.product-card:hover .product-emoji {
+  background-color: rgb(239, 246, 255);
+}

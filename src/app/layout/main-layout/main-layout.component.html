@@ -1,0 +1,14 @@
+<div class="min-h-screen bg-gray-100">
+  <app-topbar (menuToggle)="toggleSidebar()"></app-topbar>
+  <app-sidebar [collapsed]="sidebarCollapsed()"></app-sidebar>
+
+  <main
+    class="transition-all duration-300 pt-16 min-h-screen"
+    [class.ml-64]="!sidebarCollapsed()"
+    [class.ml-16]="sidebarCollapsed()"
+  >
+    <div class="p-6">
+      <router-outlet></router-outlet>
+    </div>
+  </main>
+</div>

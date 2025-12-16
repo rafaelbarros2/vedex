@@ -1,0 +1,126 @@
+<div
+  class="fixed top-16 left-0 h-[calc(100vh-4rem)] bg-gray-800 transition-all duration-300 overflow-y-auto overflow-x-hidden z-[90]"
+  [class.w-16]="collapsed()"
+  [class.w-64]="!collapsed()"
+>
+  <div class="p-2">
+    @for (item of menuItems(); track item.label) {
+      <div class="mb-1">
+        <!-- Menu Item with Route -->
+        @if (item.route && !item.items) {
+          <a
+            [routerLink]="item.route"
+            routerLinkActive="bg-blue-600 text-white"
+            class="flex items-center px-4 py-3 text-gray-300 rounded-lg transition-all duration-200 hover:bg-gray-700 cursor-pointer relative"
+          >
+            <span class="text-xl w-6 h-6 flex items-center justify-center flex-shrink-0">
+              {{ item.icon }}
+            </span>
+            <span
+              class="ml-3 text-sm font-medium whitespace-nowrap transition-opacity duration-300"
+              [class.opacity-0]="collapsed()"
+              [class.w-0]="collapsed()"
+              [class.opacity-100]="!collapsed()"
+            >
+              {{ item.label }}
+            </span>
+            @if (item.badge && !collapsed()) {
+              <span class="ml-auto bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full min-w-[18px] text-center">
+                {{ item.badge }}
+              </span>
+            }
+          </a>
+        }
+
+        <!-- Menu Item with Submenu -->
+        @if (item.items) {
+          <div>
+            <div
+              (click)="toggleSubmenu(item)"
+              class="flex items-center px-4 py-3 text-gray-300 rounded-lg transition-all duration-200 hover:bg-gray-700 cursor-pointer"
+              [class.bg-gray-700]="item.expanded"
+            >
+              <span class="text-xl w-6 h-6 flex items-center justify-center flex-shrink-0">
+                {{ item.icon }}
+              </span>
+              <span
+                class="ml-3 text-sm font-medium whitespace-nowrap transition-opacity duration-300"
+                [class.opacity-0]="collapsed()"
+                [class.w-0]="collapsed()"
+                [class.opacity-100]="!collapsed()"
+              >
+                {{ item.label }}
+              </span>
+              @if (!collapsed()) {
+                <span
+                  class="ml-auto text-xs transition-transform duration-300"
+                  [class.rotate-90]="item.expanded"
+                >
+                  ▶
+                </span>
+              }
+            </div>
+
+            <!-- Submenu -->
+            @if (item.expanded && !collapsed()) {
+              <div class="pl-5 mt-1">
+                @for (subItem of item.items; track subItem.label) {
+                  <a
+                    [routerLink]="subItem.route"
+                    routerLinkActive="bg-blue-600/20 text-blue-400"
+                    class="flex items-center px-4 py-2.5 text-gray-400 rounded-md transition-all duration-200 hover:bg-gray-700/50 hover:text-gray-200 text-sm mb-0.5"
+                  >
+                    {{ subItem.label }}
+                  </a>
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Divider -->
+    <div class="border-t border-gray-700 my-2"></div>
+
+    <!-- User Section & Logout -->
+    <div class="mt-auto">
+      <!-- User Info (quando não colapsado) -->
+      @if (!collapsed()) {
+        <div class="px-4 py-3 mb-2">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
+              {{ getUserInitials() }}
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="text-sm font-medium text-white truncate">
+                {{ getUserDisplayName() }}
+              </div>
+              <div class="text-xs text-gray-400 truncate">
+                {{ userInfo()?.email || 'usuário@vendex.com' }}
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Logout Button -->
+      <button
+        (click)="logout()"
+        class="w-full flex items-center px-4 py-3 text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded-lg transition-all duration-200 cursor-pointer"
+      >
+        <span class="text-xl w-6 h-6 flex items-center justify-center flex-shrink-0">
+          🚪
+        </span>
+        <span
+          class="ml-3 text-sm font-medium whitespace-nowrap transition-opacity duration-300"
+          [class.opacity-0]="collapsed()"
+          [class.w-0]="collapsed()"
+          [class.opacity-100]="!collapsed()"
+        >
+          Sair
+        </span>
+      </button>
+    </div>
+  </div>
+</div>

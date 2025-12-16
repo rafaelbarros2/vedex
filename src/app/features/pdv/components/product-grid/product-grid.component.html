@@ -1,0 +1,62 @@
+    <div class="bg-gray-50 p-6 overflow-y-auto">
+      <!-- Barra de Pesquisa -->
+      <div class="mb-6 relative">
+        <span class="p-input-icon-right w-full">
+          <i class="pi pi-search text-gray-400"></i>
+          <input
+            pInputText
+            type="text"
+            [(ngModel)]="searchTerm"
+            placeholder="Digite o nome do produto ou código de barras..."
+            class="w-full py-3 pl-4 pr-12 text-base border-2 border-gray-200 rounded-lg focus:border-blue-500 transition-colors"
+            autofocus
+          />
+        </span>
+      </div>
+
+      <!-- Grid de Produtos -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+        @for (produto of filteredProducts(); track produto.id) {
+          <div
+            (click)="onProductSelect(produto)"
+            class="bg-white border border-gray-200 rounded-lg p-4 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:border-blue-500 group"
+          >
+            <!-- Imagem/Emoji do Produto -->
+            <div class="w-full h-28 bg-gray-100 rounded-md flex items-center justify-center text-5xl mb-3 group-hover:bg-blue-50 transition-colors">
+              {{ produto.emoji }}
+            </div>
+
+            <!-- Informações do Produto -->
+            <div class="space-y-2">
+              <div class="text-sm font-semibold text-gray-800 truncate" [title]="produto.nome">
+                {{ produto.nome }}
+              </div>
+
+              <div class="text-xs text-gray-500">
+                Em estoque: {{ produto.estoque }} {{ produto.unidadeEstoque }}
+              </div>
+
+              <div class="text-lg font-bold text-blue-600">
+                R$ {{ formatPrice(produto.precoVenda) }}
+              </div>
+            </div>
+
+            <!-- Indicador de Estoque Baixo -->
+            @if (produto.estoque <= 10) {
+              <div class="mt-2 px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-full text-center">
+                Estoque baixo
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Mensagem quando não há produtos -->
+      @if (filteredProducts().length === 0) {
+        <div class="flex flex-col items-center justify-center text-center text-gray-500 py-12">
+          <div class="text-6xl mb-4 opacity-30">🔍</div>
+          <h3 class="font-semibold text-lg mb-2">Nenhum produto encontrado</h3>
+          <p class="text-sm">Tente pesquisar com outros termos ou verifique se o produto está cadastrado.</p>
+        </div>
+      }
+    </div>

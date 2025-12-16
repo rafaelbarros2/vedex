@@ -1,0 +1,38 @@
+<header class="bg-white border-b border-gray-200 shadow-sm px-6 flex items-center justify-between">
+  <div class="flex items-center gap-5">
+    <div
+      class="text-xl font-bold text-blue-600 cursor-pointer hover:text-blue-700 transition-colors"
+      (click)="onViewChange('pdv')"
+    >
+      🏪 Vedex PDV
+    </div>
+    <div class="pl-5 border-l-2 border-gray-200">
+      <div class="text-sm font-semibold text-gray-800">Loja Centro - Caixa 01</div>
+      <div class="text-xs text-gray-500">Operador: João Silva</div>
+    </div>
+  </div>
+
+  <div class="flex items-center gap-3">
+    <p-button
+      label="⏰ Histórico"
+      size="small"
+      severity="secondary"
+      class="text-sm"
+      (onClick)="onViewChange('history')"
+    />
+    <p-button
+      label="⚙️ Config"
+      size="small"
+      severity="secondary"
+      class="text-sm"
+      (onClick)="onViewChange('config')"
+    />
+    <p-button
+      label="🔒 Fechar Caixa"
+      size="small"
+      severity="danger"
+      class="text-sm"
+      (onClick)="onCloseCashier()"
+    />
+  </div>
+</header>

@@ -1,0 +1,79 @@
+<header class="flex justify-between items-center px-6 py-3 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+  <!-- Logo / Título -->
+  <div class="flex items-center gap-3">
+    <i class="pi pi-bars text-2xl cursor-pointer hover:text-primary" title="Menu"></i>
+    <h1 class="text-xl font-bold text-gray-800 dark:text-white">VendeX</h1>
+  </div>
+
+  <!-- User Info & Menu -->
+  @if (isAuthenticated()) {
+    <div class="flex items-center gap-4">
+      <!-- Tenant Info (opcional) -->
+      @if (userInfo()?.tenantId) {
+        <div class="hidden md:flex items-center gap-2 px-3 py-1 bg-blue-50 dark:bg-blue-900 rounded-lg">
+          <i class="pi pi-building text-blue-600 dark:text-blue-300"></i>
+          <span class="text-sm text-blue-700 dark:text-blue-200">{{ userInfo()?.tenantId }}</span>
+        </div>
+      }
+
+      <!-- User Info -->
+      <div class="flex items-center gap-3">
+        <!-- Nome e Role -->
+        <div class="hidden md:block text-right">
+          <p class="text-sm font-medium text-gray-700 dark:text-gray-200">
+            {{ userInfo()?.fullName || userInfo()?.username }}
+          </p>
+          @if (userInfo()?.roles && userInfo()?.roles.length > 0) {
+            <p class="text-xs text-gray-500 dark:text-gray-400">
+              {{ userInfo()?.roles[0] }}
+            </p>
+          }
+        </div>
+
+        <!-- Avatar com Menu -->
+        <div class="relative">
+          <p-avatar
+            [label]="userInitials()"
+            shape="circle"
+            [style]="{'background-color': '#2196F3', 'color': '#ffffff', 'cursor': 'pointer'}"
+            size="large"
+            (click)="menu.toggle($event)"
+          ></p-avatar>
+
+          <p-menu
+            #menu
+            [model]="userMenuItems"
+            [popup]="true"
+            appendTo="body"
+          >
+            <ng-template pTemplate="start">
+              <div class="p-3 border-b border-gray-200 dark:border-gray-700">
+                <p class="font-semibold text-gray-800 dark:text-white">
+                  {{ userInfo()?.fullName || userInfo()?.username }}
+                </p>
+                <p class="text-sm text-gray-500 dark:text-gray-400">
+                  {{ userInfo()?.email }}
+                </p>
+                @if (userInfo()?.roles && userInfo()?.roles.length > 0) {
+                  <div class="flex gap-1 mt-2">
+                    @for (role of userInfo()?.roles; track role) {
+                      <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                        {{ role }}
+                      </span>
+                    }
+                  </div>
+                }
+              </div>
+            </ng-template>
+          </p-menu>
+        </div>
+      </div>
+    </div>
+  } @else {
+    <!-- Botão de Login (caso não esteja autenticado) -->
+    <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+      <i class="pi pi-sign-in mr-2"></i>
+      Entrar
+    </button>
+  }
+</header>

@@ -1,0 +1,30 @@
+<div class="login-container">
+  <p-card styleClass="login-card shadow-lg">
+    <div class="flex flex-column align-items-center mb-4">
+      <div class="text-center mb-4">
+        <h1 class="text-3xl font-bold text-900 mb-2">VendeX</h1>
+        <span class="text-600 font-medium">Faça login para continuar</span>
+      </div>
+      
+      <div class="w-full">
+        <p-message *ngIf="error()" severity="error" [text]="error()!" class="block mb-3"></p-message>
+        
+        <div class="flex flex-column gap-3">
+          <p-button 
+            label="Entrar com Keycloak" 
+            icon="pi pi-sign-in" 
+            styleClass="w-full p-button-lg" 
+            [loading]="loading()" 
+            (onClick)="login()">
+          </p-button>
+        </div>
+      </div>
+    </div>
+    
+    <ng-template pTemplate="footer">
+      <div class="text-center text-500 text-sm">
+        &copy; 2024 VendeX System
+      </div>
+    </ng-template>
+  </p-card>
+</div>

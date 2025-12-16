@@ -1,0 +1,14 @@
+@import "tailwindcss" reference;
+
+/* Custom styles for PrimeNG buttons */
+::ng-deep .p-button {
+  @apply px-4  text-sm font-medium rounded-md transition-colors;
+}
+
+::ng-deep .p-button.p-button-secondary {
+  @apply bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200;
+}
+
+::ng-deep .p-button.p-button-danger {
+  @apply bg-red-500 text-white border-red-500 hover:bg-red-600;
+}

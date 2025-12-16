@@ -1,0 +1,63 @@
+@import "tailwindcss" reference;
+
+/* Custom styles for payment dialog */
+
+::ng-deep .payment-dialog .p-dialog {
+  @apply rounded-lg border border-gray-200 shadow-xl;
+}
+
+::ng-deep .payment-dialog .p-dialog-header {
+  @apply bg-gray-50 border-b border-gray-200 rounded-t-lg;
+}
+
+::ng-deep .payment-dialog .p-dialog-title {
+  @apply text-lg font-semibold text-gray-800;
+}
+
+::ng-deep .payment-dialog .p-dialog-content {
+  @apply p-6;
+}
+
+::ng-deep .payment-dialog .p-dialog-footer {
+  @apply bg-gray-50 border-t border-gray-200 rounded-b-lg p-4;
+}
+
+/* Radio button styles */
+::ng-deep .p-radiobutton {
+  @apply w-4 h-4;
+}
+
+::ng-deep .p-radiobutton .p-radiobutton-box {
+  @apply w-4 h-4 border-2 border-gray-300 rounded-full;
+}
+
+::ng-deep .p-radiobutton .p-radiobutton-box.p-highlight {
+  @apply border-blue-500 bg-blue-500;
+}
+
+/* Input number styles */
+::ng-deep .p-inputnumber {
+  @apply w-full;
+}
+
+::ng-deep .p-inputnumber .p-inputnumber-input {
+  @apply w-full  px-3 border border-gray-300 rounded-md focus:border-blue-500 focus:ring-0;
+}
+
+/* Button styles */
+::ng-deep .p-button.p-button-success {
+  @apply bg-green-600 border-green-600 hover:bg-green-700 hover:border-green-700;
+}
+
+::ng-deep .p-button.p-button-secondary {
+  @apply bg-white border-gray-300 text-gray-700 hover:bg-gray-50;
+}
+
+/* Divider styles */
+::ng-deep .p-divider {
+  @apply my-3;
+}
+
+::ng-deep .p-divider .p-divider-content {
+  @apply bg-gray-200 h-px;
+}

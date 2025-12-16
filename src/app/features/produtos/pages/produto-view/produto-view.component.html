@@ -1,0 +1,409 @@
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-6 lg:p-8">
+  <div class="max-w-6xl mx-auto">
+    <!-- Header -->
+    <div class="mb-6">
+      <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 mb-2">
+        <a routerLink="/produtos" class="hover:text-indigo-600 cursor-pointer">Produtos</a>
+        <span>/</span>
+        <span>{{ isEditMode ? 'Editar' : 'Novo' }} Produto</span>
+      </div>
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+        {{ isEditMode ? 'Editar Produto' : 'Novo Produto' }}
+      </h1>
+    </div>
+
+    <!-- Form -->
+    <form [formGroup]="form" (ngSubmit)="salvar()" class="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+      <p-tabView styleClass="p-0">
+        <!-- Aba Geral -->
+        <p-tabPanel header="Geral" leftIcon="pi pi-box">
+          <div class="p-6 space-y-6">
+            <!-- Informações Básicas -->
+            <div>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Informações Básicas</h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Nome -->
+                <div class="md:col-span-2">
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Nome do Produto <span class="text-red-500">*</span>
+                  </label>
+                  <input
+                    pInputText
+                    formControlName="nome"
+                    placeholder="Ex: Arroz Tipo 1 5kg"
+                    class="w-full"
+                  />
+                </div>
+
+                <!-- Código Interno -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Código Interno <span class="text-red-500">*</span>
+                  </label>
+                  <input
+                    pInputText
+                    formControlName="codigoInterno"
+                    class="w-full"
+                  />
+                </div>
+
+                <!-- Código de Barras -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Código de Barras (EAN-13)
+                  </label>
+                  <input
+                    pInputText
+                    formControlName="codigoBarras"
+                    placeholder="7891234567890"
+                    class="w-full"
+                  />
+                </div>
+
+                <!-- Categoria -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Categoria <span class="text-red-500">*</span>
+                  </label>
+                  <p-dropdown
+                    formControlName="categoria"
+                    [options]="categorias()"
+                    placeholder="Selecione"
+                    styleClass="w-full"
+                  ></p-dropdown>
+                </div>
+
+                <!-- Subcategoria -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Subcategoria
+                  </label>
+                  <p-dropdown
+                    formControlName="subcategoria"
+                    [options]="subcategorias()"
+                    placeholder="Selecione"
+                    [disabled]="!form.get('categoria')?.value"
+                    styleClass="w-full"
+                  ></p-dropdown>
+                </div>
+
+                <!-- Unidade de Medida -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Unidade de Medida <span class="text-red-500">*</span>
+                  </label>
+                  <p-dropdown
+                    formControlName="unidadeMedida"
+                    [options]="unidadesMedida"
+                    styleClass="w-full"
+                  ></p-dropdown>
+                </div>
+
+                <!-- Marca -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Marca
+                  </label>
+                  <input
+                    pInputText
+                    formControlName="marca"
+                    class="w-full"
+                  />
+                </div>
+
+                <!-- Modelo/Referência -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Modelo/Referência
+                  </label>
+                  <input
+                    pInputText
+                    formControlName="modelo"
+                    class="w-full"
+                  />
+                </div>
+
+                <!-- Descrição -->
+                <div class="md:col-span-2">
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Descrição
+                  </label>
+                  <textarea
+                    pInputTextarea
+                    formControlName="descricao"
+                    rows="3"
+                    class="w-full"
+                  ></textarea>
+                </div>
+              </div>
+            </div>
+
+            <!-- Imagens -->
+            <div>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Imagens</h3>
+              <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center">
+                <i class="pi pi-cloud-upload text-4xl text-gray-400 mb-2"></i>
+                <p class="text-gray-600 dark:text-gray-400 mb-2">Arraste imagens ou clique para fazer upload</p>
+                <p class="text-sm text-gray-500">PNG, JPG até 5MB</p>
+              </div>
+            </div>
+          </div>
+        </p-tabPanel>
+
+        <!-- Aba Preços -->
+        <p-tabPanel header="Preços" leftIcon="pi pi-dollar">
+          <div class="p-6 space-y-6">
+            <div>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Preços e Custos</h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Preço de Custo -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Preço de Custo <span class="text-red-500">*</span>
+                  </label>
+                  <p-inputNumber
+                    formControlName="precoCusto"
+                    mode="currency"
+                    currency="BRL"
+                    locale="pt-BR"
+                    styleClass="w-full"
+                  ></p-inputNumber>
+                </div>
+
+                <!-- Preço de Venda -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Preço de Venda <span class="text-red-500">*</span>
+                  </label>
+                  <p-inputNumber
+                    formControlName="precoVenda"
+                    mode="currency"
+                    currency="BRL"
+                    locale="pt-BR"
+                    styleClass="w-full"
+                  ></p-inputNumber>
+                </div>
+
+                <!-- Margem de Lucro (calculado) -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Margem de Lucro
+                  </label>
+                  <div class="p-3 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                    <span class="text-lg font-semibold text-green-600">{{ margemLucro.toFixed(2) }}%</span>
+                  </div>
+                </div>
+
+                <!-- Markup (calculado) -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Markup
+                  </label>
+                  <div class="p-3 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                    <span class="text-lg font-semibold text-blue-600">{{ markup.toFixed(2) }}x</span>
+                  </div>
+                </div>
+
+                <!-- Desconto Máximo -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Desconto Máximo (%)
+                  </label>
+                  <p-inputNumber
+                    formControlName="descontoMaximo"
+                    [min]="0"
+                    [max]="100"
+                    suffix="%"
+                    styleClass="w-full"
+                  ></p-inputNumber>
+                </div>
+
+                <!-- Permite Desconto -->
+                <div class="flex items-end">
+                  <div class="flex items-center">
+                    <p-checkbox
+                      formControlName="permiteDesconto"
+                      [binary]="true"
+                      inputId="permiteDesconto"
+                    ></p-checkbox>
+                    <label for="permiteDesconto" class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Permite Venda com Desconto
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </p-tabPanel>
+
+        <!-- Aba Estoque -->
+        <p-tabPanel header="Estoque" leftIcon="pi pi-shopping-cart">
+          <div class="p-6 space-y-6">
+            <div>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Controle de Estoque</h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Estoque Atual -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Estoque Atual
+                  </label>
+                  <p-inputNumber
+                    formControlName="estoque"
+                    [min]="0"
+                    styleClass="w-full"
+                  ></p-inputNumber>
+                </div>
+
+                <!-- Estoque Mínimo -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Estoque Mínimo <span class="text-red-500">*</span>
+                  </label>
+                  <p-inputNumber
+                    formControlName="estoqueMinimo"
+                    [min]="0"
+                    styleClass="w-full"
+                  ></p-inputNumber>
+                </div>
+
+                <!-- Estoque Máximo -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Estoque Máximo
+                  </label>
+                  <p-inputNumber
+                    formControlName="estoqueMaximo"
+                    [min]="0"
+                    styleClass="w-full"
+                  ></p-inputNumber>
+                </div>
+
+                <!-- Localização -->
+                <div class="md:col-span-2">
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Localização no Estoque
+                  </label>
+                  <input
+                    pInputText
+                    formControlName="localizacaoEstoque"
+                    placeholder="Ex: Corredor A - Prateleira 3"
+                    class="w-full"
+                  />
+                </div>
+
+                <!-- Controlar Estoque -->
+                <div class="flex items-center gap-4">
+                  <div class="flex items-center">
+                    <p-checkbox
+                      formControlName="controlarEstoque"
+                      [binary]="true"
+                      inputId="controlarEstoque"
+                    ></p-checkbox>
+                    <label for="controlarEstoque" class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Controlar Estoque
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Permite Estoque Negativo -->
+                <div class="flex items-center gap-4">
+                  <div class="flex items-center">
+                    <p-checkbox
+                      formControlName="permiteEstoqueNegativo"
+                      [binary]="true"
+                      inputId="permiteEstoqueNegativo"
+                    ></p-checkbox>
+                    <label for="permiteEstoqueNegativo" class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Permite Venda com Estoque Negativo
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </p-tabPanel>
+
+        <!-- Aba Fiscal -->
+        <p-tabPanel header="Fiscal" leftIcon="pi pi-file">
+          <div class="p-6 space-y-6">
+            <div>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Informações Fiscais</h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">NCM</label>
+                  <input pInputText formControlName="ncm" class="w-full" />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">CEST</label>
+                  <input pInputText formControlName="cest" class="w-full" />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">CFOP Padrão</label>
+                  <input pInputText formControlName="cfop" class="w-full" />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Alíquota ICMS (%)</label>
+                  <p-inputNumber formControlName="aliquotaIcms" suffix="%" styleClass="w-full"></p-inputNumber>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Alíquota PIS (%)</label>
+                  <p-inputNumber formControlName="aliquotaPis" suffix="%" styleClass="w-full"></p-inputNumber>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Alíquota COFINS (%)</label>
+                  <p-inputNumber formControlName="aliquotaCofins" suffix="%" styleClass="w-full"></p-inputNumber>
+                </div>
+              </div>
+            </div>
+          </div>
+        </p-tabPanel>
+      </p-tabView>
+
+      <!-- Footer Actions -->
+      <div class="border-t border-gray-200 dark:border-gray-700 p-6">
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <!-- Status Toggles -->
+          <div class="flex flex-wrap items-center gap-4">
+            <div class="flex items-center">
+              <p-checkbox formControlName="ativo" [binary]="true" inputId="ativo"></p-checkbox>
+              <label for="ativo" class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">Ativo</label>
+            </div>
+            <div class="flex items-center">
+              <p-checkbox formControlName="destaque" [binary]="true" inputId="destaque"></p-checkbox>
+              <label for="destaque" class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">Destaque</label>
+            </div>
+            <div class="flex items-center">
+              <p-checkbox formControlName="novidade" [binary]="true" inputId="novidade"></p-checkbox>
+              <label for="novidade" class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">Novidade</label>
+            </div>
+            <div class="flex items-center">
+              <p-checkbox formControlName="promocao" [binary]="true" inputId="promocao"></p-checkbox>
+              <label for="promocao" class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">Promoção</label>
+            </div>
+          </div>
+
+          <!-- Buttons -->
+          <div class="flex gap-2">
+            <button
+              pButton
+              type="button"
+              label="Cancelar"
+              icon="pi pi-times"
+              class="p-button-outlined"
+              (click)="cancelar()"
+            ></button>
+            <button
+              pButton
+              type="submit"
+              label="Salvar"
+              icon="pi pi-check"
+              [disabled]="form.invalid"
+            ></button>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<p-toast></p-toast>

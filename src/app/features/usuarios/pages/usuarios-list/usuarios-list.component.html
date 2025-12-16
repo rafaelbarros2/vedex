@@ -1,0 +1,189 @@
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<div class="p-6">
+  <!-- Header -->
+  <div class="flex justify-between items-center mb-6">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-100">Usuários</h1>
+      <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Gerencie os usuários do sistema</p>
+    </div>
+    <button
+      pButton
+      label="Novo Usuário"
+      icon="pi pi-plus"
+      (click)="novoUsuario()"
+    ></button>
+  </div>
+
+  <!-- Filtros -->
+  <p-card class="mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div class="md:col-span-2">
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Buscar</label>
+        <span class="p-input-icon-left w-full">
+          <i class="pi pi-search"></i>
+          <input
+            pInputText
+            [(ngModel)]="termoBusca"
+            (input)="buscarUsuarios()"
+            placeholder="Nome, email ou CPF"
+            class="w-full"
+          />
+        </span>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Perfil</label>
+        <p-dropdown
+          [(ngModel)]="perfilFiltro"
+          [options]="perfisOptions"
+          placeholder="Todos"
+          [showClear]="true"
+          (onChange)="aplicarFiltros()"
+          class="w-full"
+        ></p-dropdown>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status</label>
+        <p-dropdown
+          [(ngModel)]="statusFiltro"
+          [options]="statusOptions"
+          placeholder="Todos"
+          [showClear]="true"
+          (onChange)="aplicarFiltros()"
+          class="w-full"
+        ></p-dropdown>
+      </div>
+    </div>
+
+    <div class="mt-4">
+      <button
+        pButton
+        label="Limpar Filtros"
+        icon="pi pi-filter-slash"
+        class="p-button-outlined p-button-secondary"
+        (click)="limparFiltros()"
+      ></button>
+    </div>
+  </p-card>
+
+  <!-- Tabela -->
+  <p-card>
+    <p-table
+      [value]="usuarios()"
+      [paginator]="true"
+      [rows]="10"
+      [rowsPerPageOptions]="[10, 25, 50]"
+      [tableStyle]="{ 'min-width': '50rem' }"
+      styleClass="p-datatable-sm"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Nome</th>
+          <th>Email</th>
+          <th>CPF</th>
+          <th>Perfil</th>
+          <th>Status</th>
+          <th>Cadastro</th>
+          <th>Último Acesso</th>
+          <th class="text-center">Ações</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-usuario>
+        <tr>
+          <td>
+            <div class="flex items-center gap-3">
+              @if (usuario.foto) {
+                <img [src]="usuario.foto" [alt]="usuario.nome" class="w-10 h-10 rounded-full" />
+              } @else {
+                <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">
+                  {{ usuario.nome.charAt(0).toUpperCase() }}
+                </div>
+              }
+              <div>
+                <div class="font-semibold">{{ usuario.nome }}</div>
+                @if (usuario.telefone) {
+                  <div class="text-xs text-gray-500">{{ usuario.telefone }}</div>
+                }
+              </div>
+            </div>
+          </td>
+          <td>{{ usuario.email }}</td>
+          <td>{{ usuario.cpf || '-' }}</td>
+          <td>
+            <p-tag
+              [value]="getPerfilLabel(usuario.perfil)"
+              [severity]="getPerfilSeverity(usuario.perfil)"
+            ></p-tag>
+          </td>
+          <td>
+            <p-tag
+              [value]="getStatusLabel(usuario.status)"
+              [severity]="getStatusSeverity(usuario.status)"
+            ></p-tag>
+          </td>
+          <td>{{ formatDate(usuario.dataCadastro) }}</td>
+          <td>{{ usuario.ultimoAcesso ? formatDate(usuario.ultimoAcesso) : '-' }}</td>
+          <td class="text-center">
+            <div class="flex justify-center gap-2">
+              <button
+                pButton
+                icon="pi pi-pencil"
+                class="p-button-rounded p-button-text p-button-info"
+                pTooltip="Editar"
+                tooltipPosition="top"
+                (click)="editarUsuario(usuario.id)"
+              ></button>
+
+              @if (usuario.status === 'ativo') {
+                <button
+                  pButton
+                  icon="pi pi-ban"
+                  class="p-button-rounded p-button-text p-button-warning"
+                  pTooltip="Inativar"
+                  tooltipPosition="top"
+                  (click)="alterarStatus(usuario, 'inativo')"
+                ></button>
+              } @else if (usuario.status === 'inativo') {
+                <button
+                  pButton
+                  icon="pi pi-check"
+                  class="p-button-rounded p-button-text p-button-success"
+                  pTooltip="Ativar"
+                  tooltipPosition="top"
+                  (click)="alterarStatus(usuario, 'ativo')"
+                ></button>
+              }
+
+              <button
+                pButton
+                icon="pi pi-trash"
+                class="p-button-rounded p-button-text p-button-danger"
+                pTooltip="Excluir"
+                tooltipPosition="top"
+                (click)="deletarUsuario(usuario)"
+              ></button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="8" class="text-center py-8">
+            <div class="text-gray-500">
+              <i class="pi pi-users text-4xl mb-3"></i>
+              <p>Nenhum usuário encontrado</p>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="summary">
+        <div class="flex justify-between items-center p-3">
+          <span class="font-semibold">Total de Usuários: {{ usuarios().length }}</span>
+        </div>
+      </ng-template>
+    </p-table>
+  </p-card>
+</div>

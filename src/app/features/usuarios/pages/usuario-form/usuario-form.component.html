@@ -1,0 +1,286 @@
+<p-toast></p-toast>
+
+<div class="p-6">
+  <!-- Header -->
+  <div class="mb-6">
+    <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-100">
+      {{ isEditMode ? 'Editar Usuário' : 'Novo Usuário' }}
+    </h1>
+    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+      {{ isEditMode ? 'Altere as informações do usuário' : 'Preencha os dados do novo usuário' }}
+    </p>
+  </div>
+
+  <!-- Formulário -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Coluna Principal -->
+    <div class="lg:col-span-2 space-y-6">
+      <!-- Dados Pessoais -->
+      <p-card>
+        <ng-template pTemplate="header">
+          <div class="p-4">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">Dados Pessoais</h3>
+          </div>
+        </ng-template>
+
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Nome Completo *
+            </label>
+            <input
+              pInputText
+              [(ngModel)]="nome"
+              placeholder="Digite o nome completo"
+              class="w-full"
+            />
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Email *
+              </label>
+              <input
+                pInputText
+                [(ngModel)]="email"
+                type="email"
+                placeholder="email@exemplo.com"
+                class="w-full"
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                CPF
+              </label>
+              <p-inputMask
+                [(ngModel)]="cpf"
+                mask="999.999.999-99"
+                placeholder="000.000.000-00"
+                class="w-full"
+              ></p-inputMask>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Telefone
+            </label>
+            <p-inputMask
+              [(ngModel)]="telefone"
+              mask="(99) 99999-9999"
+              placeholder="(00) 00000-0000"
+              class="w-full"
+            ></p-inputMask>
+          </div>
+        </div>
+      </p-card>
+
+      <!-- Senha (apenas para novo usuário) -->
+      @if (!isEditMode) {
+        <p-card>
+          <ng-template pTemplate="header">
+            <div class="p-4">
+              <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">Senha de Acesso</h3>
+            </div>
+          </ng-template>
+
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Senha *
+              </label>
+              <p-password
+                [(ngModel)]="senha"
+                placeholder="Digite a senha"
+                [toggleMask]="true"
+                [feedback]="true"
+                class="w-full"
+                [inputStyleClass]="'w-full'"
+              ></p-password>
+              <small class="text-gray-500">Mínimo de 6 caracteres</small>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Confirmar Senha *
+              </label>
+              <p-password
+                [(ngModel)]="confirmarSenha"
+                placeholder="Confirme a senha"
+                [toggleMask]="true"
+                [feedback]="false"
+                class="w-full"
+                [inputStyleClass]="'w-full'"
+              ></p-password>
+            </div>
+          </div>
+        </p-card>
+      }
+
+      <!-- Permissões -->
+      <p-card>
+        <ng-template pTemplate="header">
+          <div class="p-4">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">Permissões de Acesso</h3>
+          </div>
+        </ng-template>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="flex items-center">
+            <p-checkbox
+              [(ngModel)]="permissoes.pdv"
+              [binary]="true"
+              inputId="perm-pdv"
+            ></p-checkbox>
+            <label for="perm-pdv" class="ml-3 cursor-pointer">
+              <div class="font-medium">PDV</div>
+              <div class="text-xs text-gray-500">Acesso ao ponto de venda</div>
+            </label>
+          </div>
+
+          <div class="flex items-center">
+            <p-checkbox
+              [(ngModel)]="permissoes.produtos"
+              [binary]="true"
+              inputId="perm-produtos"
+            ></p-checkbox>
+            <label for="perm-produtos" class="ml-3 cursor-pointer">
+              <div class="font-medium">Produtos</div>
+              <div class="text-xs text-gray-500">Gerenciar produtos</div>
+            </label>
+          </div>
+
+          <div class="flex items-center">
+            <p-checkbox
+              [(ngModel)]="permissoes.estoque"
+              [binary]="true"
+              inputId="perm-estoque"
+            ></p-checkbox>
+            <label for="perm-estoque" class="ml-3 cursor-pointer">
+              <div class="font-medium">Estoque</div>
+              <div class="text-xs text-gray-500">Controle de estoque</div>
+            </label>
+          </div>
+
+          <div class="flex items-center">
+            <p-checkbox
+              [(ngModel)]="permissoes.caixa"
+              [binary]="true"
+              inputId="perm-caixa"
+            ></p-checkbox>
+            <label for="perm-caixa" class="ml-3 cursor-pointer">
+              <div class="font-medium">Fluxo de Caixa</div>
+              <div class="text-xs text-gray-500">Abertura/fechamento</div>
+            </label>
+          </div>
+
+          <div class="flex items-center">
+            <p-checkbox
+              [(ngModel)]="permissoes.relatorios"
+              [binary]="true"
+              inputId="perm-relatorios"
+            ></p-checkbox>
+            <label for="perm-relatorios" class="ml-3 cursor-pointer">
+              <div class="font-medium">Relatórios</div>
+              <div class="text-xs text-gray-500">Visualizar relatórios</div>
+            </label>
+          </div>
+
+          <div class="flex items-center">
+            <p-checkbox
+              [(ngModel)]="permissoes.usuarios"
+              [binary]="true"
+              inputId="perm-usuarios"
+            ></p-checkbox>
+            <label for="perm-usuarios" class="ml-3 cursor-pointer">
+              <div class="font-medium">Usuários</div>
+              <div class="text-xs text-gray-500">Gerenciar usuários</div>
+            </label>
+          </div>
+
+          <div class="flex items-center">
+            <p-checkbox
+              [(ngModel)]="permissoes.configuracoes"
+              [binary]="true"
+              inputId="perm-config"
+            ></p-checkbox>
+            <label for="perm-config" class="ml-3 cursor-pointer">
+              <div class="font-medium">Configurações</div>
+              <div class="text-xs text-gray-500">Configurações do sistema</div>
+            </label>
+          </div>
+        </div>
+
+        <div class="mt-4 p-3 bg-blue-50 dark:bg-blue-900 rounded-lg">
+          <div class="flex items-start gap-2">
+            <i class="pi pi-info-circle text-blue-600 dark:text-blue-400 mt-1"></i>
+            <div class="text-sm text-blue-800 dark:text-blue-200">
+              As permissões são sugeridas automaticamente baseadas no perfil, mas podem ser personalizadas.
+            </div>
+          </div>
+        </div>
+      </p-card>
+    </div>
+
+    <!-- Coluna Lateral -->
+    <div class="space-y-6">
+      <!-- Perfil e Status -->
+      <p-card>
+        <ng-template pTemplate="header">
+          <div class="p-4">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">Configurações</h3>
+          </div>
+        </ng-template>
+
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Perfil *
+            </label>
+            <p-dropdown
+              [(ngModel)]="perfil"
+              [options]="perfisOptions"
+              placeholder="Selecione o perfil"
+              (onChange)="onPerfilChange()"
+              class="w-full"
+            ></p-dropdown>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Status *
+            </label>
+            <p-dropdown
+              [(ngModel)]="status"
+              [options]="statusOptions"
+              placeholder="Selecione o status"
+              class="w-full"
+            ></p-dropdown>
+          </div>
+        </div>
+      </p-card>
+
+      <!-- Ações -->
+      <p-card>
+        <div class="space-y-3">
+          <button
+            pButton
+            label="Salvar"
+            icon="pi pi-check"
+            class="w-full"
+            (click)="salvar()"
+          ></button>
+          <button
+            pButton
+            label="Cancelar"
+            icon="pi pi-times"
+            class="w-full p-button-outlined p-button-secondary"
+            (click)="cancelar()"
+          ></button>
+        </div>
+      </p-card>
+    </div>
+  </div>
+</div>

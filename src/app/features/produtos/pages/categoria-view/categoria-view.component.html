@@ -1,0 +1,92 @@
+<div class="p-4">
+  <p-toast />
+
+  <!-- Header -->
+  <div class="mb-6">
+    <h1 class="text-2xl font-bold">
+      {{ isEditMode ? 'Editar Categoria' : 'Nova Categoria' }}
+    </h1>
+    <p class="text-gray-600 mt-1">
+      {{ isEditMode ? 'Atualize as informações da categoria' : 'Preencha os dados da nova categoria' }}
+    </p>
+  </div>
+
+  <!-- Formulário -->
+  <form [formGroup]="form" (ngSubmit)="salvar()">
+    <div class="card p-6">
+      <div class="grid grid-cols-1 gap-6">
+        <!-- Nome -->
+        <div>
+          <label for="nome" class="block mb-2 text-sm font-medium">
+            Nome <span class="text-red-500">*</span>
+          </label>
+          <input
+            id="nome"
+            type="text"
+            pInputText
+            formControlName="nome"
+            placeholder="Nome da categoria"
+            class="w-full"
+            [class.ng-invalid]="isFieldInvalid('nome')"
+            [class.ng-dirty]="isFieldInvalid('nome')"
+          />
+          <small *ngIf="isFieldInvalid('nome')" class="text-red-500">
+            {{ getFieldError('nome') }}
+          </small>
+        </div>
+
+        <!-- Descrição -->
+        <div>
+          <label for="descricao" class="block mb-2 text-sm font-medium">
+            Descrição
+          </label>
+          <textarea
+            id="descricao"
+            pInputTextarea
+            formControlName="descricao"
+            placeholder="Descrição da categoria (opcional)"
+            rows="4"
+            class="w-full"
+            [class.ng-invalid]="isFieldInvalid('descricao')"
+            [class.ng-dirty]="isFieldInvalid('descricao')"
+          ></textarea>
+          <small *ngIf="isFieldInvalid('descricao')" class="text-red-500">
+            {{ getFieldError('descricao') }}
+          </small>
+        </div>
+
+        <!-- Ativo -->
+        <div class="flex items-center">
+          <p-checkbox
+            formControlName="ativo"
+            [binary]="true"
+            inputId="ativo"
+          ></p-checkbox>
+          <label for="ativo" class="ml-2 text-sm font-medium">
+            Categoria ativa
+          </label>
+        </div>
+      </div>
+
+      <!-- Botões de ação -->
+      <div class="flex gap-3 mt-8">
+        <button
+          pButton
+          type="submit"
+          label="Salvar"
+          icon="pi pi-check"
+          [disabled]="form.invalid"
+        ></button>
+        <button
+          pButton
+          type="button"
+          label="Cancelar"
+          icon="pi pi-times"
+          severity="secondary"
+          [outlined]="true"
+          (click)="cancelar()"
+        ></button>
+      </div>
+    </div>
+  </form>
+</div>

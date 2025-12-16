@@ -1,0 +1,147 @@
+<div class="p-4">
+  <p-toast />
+  <p-confirmDialog />
+
+  <!-- Header -->
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold">Categorias</h1>
+    <button pButton label="Nova Categoria" icon="pi pi-plus" (click)="novaCategoria()"></button>
+  </div>
+
+  <!-- Filtros -->
+  <div class="card mb-4 p-4">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <!-- Busca -->
+      <div>
+        <label class="block mb-2 text-sm font-medium">Buscar</label>
+        <p-iconfield iconPosition="left">
+          <p-inputicon styleClass="pi pi-search" />
+          <input
+            pInputText
+            [(ngModel)]="filtros().busca"
+            placeholder="Nome ou descrição..."
+            class="w-full"
+            (keyup.enter)="aplicarFiltros()"
+          />
+        </p-iconfield>
+      </div>
+
+      <!-- Status -->
+      <div>
+        <label class="block mb-2 text-sm font-medium">Status</label>
+        <p-dropdown
+          [(ngModel)]="filtros().status"
+          [options]="statusOptions"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Selecione..."
+          class="w-full"
+        ></p-dropdown>
+      </div>
+
+      <!-- Botões de filtro -->
+      <div class="flex items-end gap-2">
+        <button pButton label="Filtrar" icon="pi pi-filter" (click)="aplicarFiltros()"></button>
+        <button
+          pButton
+          label="Limpar"
+          icon="pi pi-times"
+          severity="secondary"
+          [outlined]="true"
+          (click)="limparFiltros()"
+        ></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabela -->
+  <div class="card">
+    <p-table
+      [value]="categorias()"
+      [(selection)]="categoriasSelecionadas"
+      dataKey="id"
+      [paginator]="true"
+      [rows]="10"
+      [rowsPerPageOptions]="[10, 25, 50]"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} categorias"
+      [globalFilterFields]="['nome', 'descricao']"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th style="width: 4rem">
+            <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+          </th>
+          <th pSortableColumn="nome">
+            Nome <p-sortIcon field="nome"></p-sortIcon>
+          </th>
+          <th>Descrição</th>
+          <th pSortableColumn="quantidadeProdutos" style="width: 12rem">
+            Produtos <p-sortIcon field="quantidadeProdutos"></p-sortIcon>
+          </th>
+          <th pSortableColumn="ativo" style="width: 8rem">
+            Status <p-sortIcon field="ativo"></p-sortIcon>
+          </th>
+          <th style="width: 10rem">Ações</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-categoria>
+        <tr>
+          <td>
+            <p-tableCheckbox [value]="categoria"></p-tableCheckbox>
+          </td>
+          <td>
+            <strong>{{ categoria.nome }}</strong>
+          </td>
+          <td>
+            <span class="text-sm text-gray-600">{{ categoria.descricao || '-' }}</span>
+          </td>
+          <td class="text-center">
+            <span class="text-sm">{{ categoria.quantidadeProdutos || 0 }}</span>
+          </td>
+          <td>
+            <p-tag
+              [value]="categoria.ativo ? 'Ativo' : 'Inativo'"
+              [severity]="categoria.ativo ? 'success' : 'danger'"
+            ></p-tag>
+          </td>
+          <td>
+            <div class="flex gap-2">
+              <button
+                pButton
+                icon="pi pi-eye"
+                class="p-button-rounded p-button-text"
+                (click)="verCategoria(categoria.id)"
+                pTooltip="Visualizar"
+              ></button>
+              <button
+                pButton
+                icon="pi pi-pencil"
+                class="p-button-rounded p-button-text"
+                (click)="editarCategoria(categoria.id)"
+                pTooltip="Editar"
+              ></button>
+              <button
+                pButton
+                icon="pi pi-trash"
+                class="p-button-rounded p-button-text p-button-danger"
+                (click)="excluirCategoria(categoria, $event)"
+                pTooltip="Excluir"
+              ></button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="6" class="text-center">
+            <div class="py-8">
+              <i class="pi pi-inbox text-4xl text-gray-400 mb-2"></i>
+              <p class="text-gray-600">Nenhuma categoria encontrada</p>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</div>

@@ -1,0 +1,215 @@
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-6 lg:p-8">
+  <div class="max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Produtos</h1>
+        <p class="text-gray-600 dark:text-gray-400 mt-1">Gerencie o catálogo de produtos</p>
+      </div>
+      <button
+        pButton
+        label="Novo Produto"
+        icon="pi pi-plus"
+        (click)="novoProduto()"
+        class="p-button-primary"
+      ></button>
+    </div>
+
+    <!-- Filtros -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Busca -->
+        <div class="lg:col-span-2">
+          <p-iconField iconPosition="left">
+            <p-inputIcon styleClass="pi pi-search" />
+            <input
+              pInputText
+              type="text"
+              [(ngModel)]="filtros().busca"
+              (input)="aplicarFiltros()"
+              placeholder="Buscar por nome, código ou código de barras..."
+              class="w-full"
+            />
+          </p-iconField>
+        </div>
+
+        <!-- Categoria -->
+        <div>
+          <p-dropdown
+            [options]="categorias()"
+            [(ngModel)]="filtros().categoria"
+            (onChange)="aplicarFiltros()"
+            placeholder="Categoria"
+            [showClear]="true"
+            styleClass="w-full"
+          ></p-dropdown>
+        </div>
+
+        <!-- Status -->
+        <div>
+          <p-dropdown
+            [options]="statusOptions"
+            [(ngModel)]="filtros().status"
+            (onChange)="aplicarFiltros()"
+            placeholder="Status"
+            styleClass="w-full"
+          ></p-dropdown>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+        <!-- Estoque -->
+        <div>
+          <p-dropdown
+            [options]="estoqueOptions"
+            [(ngModel)]="filtros().estoque"
+            (onChange)="aplicarFiltros()"
+            placeholder="Estoque"
+            styleClass="w-full"
+          ></p-dropdown>
+        </div>
+
+        <!-- Botão Limpar -->
+        <div>
+          <button
+            pButton
+            label="Limpar Filtros"
+            icon="pi pi-filter-slash"
+            (click)="limparFiltros()"
+            class="p-button-outlined w-full"
+          ></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabela -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
+      <p-table
+        [value]="produtos()"
+        [(selection)]="produtosSelecionados"
+        [paginator]="true"
+        [rows]="10"
+        [rowsPerPageOptions]="[10, 25, 50]"
+        [showCurrentPageReport]="true"
+        currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} produtos"
+        [tableStyle]="{'min-width': '60rem'}"
+        styleClass="p-datatable-sm"
+      >
+        <ng-template pTemplate="header">
+          <tr>
+            <th style="width: 4rem">
+              <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+            </th>
+            <th style="width: 5rem">Imagem</th>
+            <th pSortableColumn="codigoInterno">
+              Código <p-sortIcon field="codigoInterno"></p-sortIcon>
+            </th>
+            <th pSortableColumn="nome">
+              Nome <p-sortIcon field="nome"></p-sortIcon>
+            </th>
+            <th pSortableColumn="categoria">
+              Categoria <p-sortIcon field="categoria"></p-sortIcon>
+            </th>
+            <th pSortableColumn="precoVenda" class="text-right">
+              Preço <p-sortIcon field="precoVenda"></p-sortIcon>
+            </th>
+            <th pSortableColumn="estoque" class="text-center">
+              Estoque <p-sortIcon field="estoque"></p-sortIcon>
+            </th>
+            <th class="text-center">Status</th>
+            <th style="width: 10rem" class="text-center">Ações</th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-produto>
+          <tr>
+            <td>
+              <p-tableCheckbox [value]="produto"></p-tableCheckbox>
+            </td>
+            <td>
+              <div class="flex items-center justify-center">
+                @if(produto.imagemPrincipal) {
+                  <img
+                    [src]="produto.imagemPrincipal"
+                    [alt]="produto.nome"
+                    class="w-10 h-10 rounded-md object-cover"
+                  />
+                } @else {
+                  <div class="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-md flex items-center justify-center text-2xl">
+                    {{ produto.emoji || '📦' }}
+                  </div>
+                }
+              </div>
+            </td>
+            <td class="font-mono text-sm">{{ produto.codigoInterno }}</td>
+            <td class="font-medium">{{ produto.nome }}</td>
+            <td>
+              <span class="text-sm text-gray-600 dark:text-gray-400">
+                {{ produto.categoria }}
+              </span>
+            </td>
+            <td class="text-right font-semibold">
+              {{ formatarPreco(produto.precoVenda) }}
+            </td>
+            <td class="text-center">
+              <span class="inline-flex items-center gap-1">
+                <span>{{ getEstoqueIcon(produto) }}</span>
+                <span [class]="produto.estoque === 0 ? 'text-red-600 font-bold' : produto.estoque <= produto.estoqueMinimo ? 'text-orange-600 font-semibold' : 'text-green-600'">
+                  {{ produto.estoque }}
+                </span>
+              </span>
+            </td>
+            <td class="text-center">
+              <p-tag
+                [value]="produto.ativo ? 'Ativo' : 'Inativo'"
+                [severity]="produto.ativo ? 'success' : 'secondary'"
+              ></p-tag>
+            </td>
+            <td class="text-center">
+              <div class="flex items-center justify-center gap-2">
+                <button
+                  pButton
+                  icon="pi pi-eye"
+                  class="p-button-rounded p-button-text p-button-sm"
+                  (click)="verProduto(produto.id)"
+                  pTooltip="Visualizar"
+                  tooltipPosition="top"
+                ></button>
+                <button
+                  pButton
+                  icon="pi pi-pencil"
+                  class="p-button-rounded p-button-text p-button-sm"
+                  (click)="editarProduto(produto.id)"
+                  pTooltip="Editar"
+                  tooltipPosition="top"
+                ></button>
+                <button
+                  pButton
+                  icon="pi pi-trash"
+                  class="p-button-rounded p-button-text p-button-danger p-button-sm"
+                  (click)="excluirProduto(produto, $event)"
+                  pTooltip="Excluir"
+                  tooltipPosition="top"
+                ></button>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="9" class="text-center py-8">
+              <div class="flex flex-col items-center gap-2 text-gray-500 dark:text-gray-400">
+                <i class="pi pi-inbox text-4xl"></i>
+                <p>Nenhum produto encontrado</p>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+</div>
+
+<p-confirmDialog></p-confirmDialog>
+<p-toast></p-toast>

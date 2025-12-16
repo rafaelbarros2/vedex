@@ -1,0 +1,61 @@
+<div class="h-screen w-screen bg-gray-100 font-sans grid grid-rows-[60px_1fr] text-gray-800 overflow-hidden">
+  <!-- Cabeçalho -->
+  <app-pdv-header
+    (viewChanged)="onViewChange($event)"
+    (closeCashier)="onCloseCashier()"
+  />
+
+  <!-- Conteúdo Principal -->
+  <div class="grid grid-cols-[1fr_400px] overflow-hidden" [class.grid-cols-1]="activeView() !== 'pdv'">
+
+    <!-- Vista PDV (Ponto de Venda) -->
+    @if (activeView() === 'pdv') {
+      <!-- Grade de Produtos -->
+      <app-product-grid
+        [produtos]="pdvService.produtos()"
+        (productSelected)="onProductSelected($event)"
+      />
+
+      <!-- Carrinho -->
+      <app-carrinho
+        [items]="pdvService.carrinho()"
+        [numeroVenda]="numeroVenda"
+        (quantityChanged)="onQuantityChanged($event)"
+        (itemRemoved)="onItemRemoved($event)"
+        (cartCleared)="onCartCleared()"
+        (finalizeSale)="onFinalizeSale()"
+        (paymentSelected)="onPaymentSelected($event)"
+        (discountRequested)="onDiscountRequested()"
+        (customerRequested)="onCustomerRequested()"
+      />
+    }
+
+    <!-- Vista Histórico -->
+    @if (activeView() === 'history') {
+      <div class="col-span-2">
+        <app-historico />
+      </div>
+    }
+
+    <!-- Vista Configurações -->
+    @if (activeView() === 'config') {
+      <div class="col-span-2 bg-gray-50 p-8 overflow-y-auto">
+          <!-- Componente de configurações será criado depois -->
+          <app-config-pdv></app-config-pdv>
+      </div>
+    }
+  </div>
+
+  <!-- Modal de Pagamento -->
+  <app-pagamento
+    [(visible)]="showPaymentDialog"
+    [items]="pdvService.carrinho()"
+    [total]="pdvService.total()"
+    [numeroVenda]="numeroVenda"
+    (paymentConfirmed)="onPaymentConfirmed($event)"
+    (paymentCancelled)="onPaymentCancelled()"
+  />
+
+  <!-- Toast para notificações (posicionado fora do grid) -->
+  <p-toast />
+</div>

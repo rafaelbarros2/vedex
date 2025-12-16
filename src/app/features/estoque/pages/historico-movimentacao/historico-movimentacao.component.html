@@ -1,0 +1,161 @@
+<div class="mb-6">
+  <div class="flex items-center justify-between mb-4">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800 mb-2">
+        @if (todasMovimentacoes) {
+          Histórico de Movimentações
+        } @else {
+          Histórico - Kardex
+        }
+      </h1>
+      <div class="flex items-center gap-2 text-gray-500 text-sm">
+        <span>Estoque</span>
+        <span class="text-gray-300">›</span>
+        <span>Histórico</span>
+        @if (produto()) {
+          <span class="text-gray-300">›</span>
+          <span>{{ produto()!.nome }}</span>
+        }
+      </div>
+    </div>
+    <button
+      pButton
+      label="Voltar"
+      icon="pi pi-arrow-left"
+      class="p-button-outlined"
+      (click)="voltar()"
+    ></button>
+  </div>
+
+  <!-- Informações do Produto -->
+  @if (produto()) {
+    <p-card class="mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div>
+          <div class="text-sm text-gray-500 mb-1">Produto</div>
+          <div class="font-semibold text-lg">{{ produto()!.nome }}</div>
+          <div class="text-sm text-gray-600">{{ produto()!.codigoInterno }}</div>
+        </div>
+        <div>
+          <div class="text-sm text-gray-500 mb-1">Categoria</div>
+          <div class="font-medium">{{ produto()!.categoria }}</div>
+        </div>
+        <div>
+          <div class="text-sm text-gray-500 mb-1">Estoque Atual</div>
+          <div class="font-semibold text-2xl text-blue-600">{{ produto()!.estoque }} {{ produto()!.unidadeMedida }}</div>
+        </div>
+        <div>
+          <div class="text-sm text-gray-500 mb-1">Estoque Mínimo</div>
+          <div class="font-medium">{{ produto()!.estoqueMinimo }} {{ produto()!.unidadeMedida }}</div>
+        </div>
+      </div>
+    </p-card>
+  }
+</div>
+
+<!-- Timeline de Movimentações -->
+@if (movimentacoes().length > 0) {
+  <p-card>
+    <p-table
+      [value]="movimentacoes()"
+      [paginator]="true"
+      [rows]="20"
+      [rowsPerPageOptions]="[10, 20, 50, 100]"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} movimentações"
+      styleClass="p-datatable-sm"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th pSortableColumn="data">
+            Data/Hora <p-sortIcon field="data"></p-sortIcon>
+          </th>
+          @if (todasMovimentacoes) {
+            <th pSortableColumn="produtoNome">
+              Produto <p-sortIcon field="produtoNome"></p-sortIcon>
+            </th>
+          }
+          <th>Tipo</th>
+          <th class="text-right">Quantidade</th>
+          <th class="text-right">Estoque Anterior</th>
+          <th class="text-right">Estoque Novo</th>
+          <th>Motivo</th>
+          <th>Usuário</th>
+          <th>Detalhes</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-mov>
+        <tr>
+          <td>
+            <div class="text-sm font-mono">{{ formatDate(mov.data) }}</div>
+          </td>
+          @if (todasMovimentacoes) {
+            <td>
+              <div class="font-medium">{{ mov.produtoNome }}</div>
+              <div class="text-xs text-gray-500">{{ mov.produtoCodigo }}</div>
+            </td>
+          }
+          <td>
+            <p-tag
+              [value]="getTipoLabel(mov.tipo)"
+              [severity]="getTipoSeverity(mov.tipo)"
+              [icon]="getTipoIcon(mov.tipo)"
+            ></p-tag>
+          </td>
+          <td class="text-right">
+            <span class="font-semibold" [class]="mov.tipo === 'entrada' ? 'text-green-600' : mov.tipo === 'saida' ? 'text-red-600' : 'text-blue-600'">
+              {{ mov.tipo === 'entrada' ? '+' : mov.tipo === 'saida' ? '-' : '±' }}{{ mov.quantidade }}
+            </span>
+          </td>
+          <td class="text-right">
+            <span class="text-sm text-gray-600">{{ mov.quantidadeAnterior }}</span>
+          </td>
+          <td class="text-right">
+            <span class="text-sm font-semibold">{{ mov.quantidadeNova }}</span>
+          </td>
+          <td>
+            <div class="text-sm">{{ mov.motivo }}</div>
+            @if (mov.observacao) {
+              <div class="text-xs text-gray-500 mt-1">{{ mov.observacao }}</div>
+            }
+          </td>
+          <td>
+            <span class="text-sm">{{ mov.usuario }}</span>
+          </td>
+          <td>
+            @if (mov.tipo === 'entrada') {
+              <div class="text-xs space-y-1">
+                @if (mov.precoCusto) {
+                  <div><strong>Custo:</strong> R$ {{ formatCurrency(mov.precoCusto) }}</div>
+                }
+                @if (mov.fornecedor) {
+                  <div><strong>Fornecedor:</strong> {{ mov.fornecedor }}</div>
+                }
+              </div>
+            }
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td [attr.colspan]="todasMovimentacoes ? 9 : 8" class="text-center py-8">
+            <div class="flex flex-col items-center gap-2 text-gray-500">
+              <i class="pi pi-inbox text-4xl"></i>
+              <p>Nenhuma movimentação encontrada</p>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-card>
+} @else {
+  <p-card>
+    <div class="flex flex-col items-center gap-2 text-gray-500 py-12">
+      <i class="pi pi-inbox text-6xl opacity-30"></i>
+      <h3 class="font-semibold text-lg">Nenhuma movimentação registrada</h3>
+      <p class="text-sm">Este produto ainda não possui histórico de movimentações.</p>
+    </div>
+  </p-card>
+}

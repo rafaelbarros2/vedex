@@ -1,0 +1,320 @@
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<div class="p-6">
+  <!-- Header -->
+  <div class="flex justify-between items-center mb-6">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-100">Notas Fiscais</h1>
+      <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Gerencie as notas fiscais emitidas</p>
+    </div>
+    <button
+      pButton
+      label="Emitir Nota Fiscal"
+      icon="pi pi-plus"
+      (click)="novaNotaFiscal()"
+    ></button>
+  </div>
+
+  <!-- Filtros -->
+  <p-card class="mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Data Início</label>
+        <p-calendar
+          [(ngModel)]="dataInicio"
+          dateFormat="dd/mm/yy"
+          [showIcon]="true"
+          placeholder="Selecione"
+          class="w-full"
+        ></p-calendar>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Data Fim</label>
+        <p-calendar
+          [(ngModel)]="dataFim"
+          dateFormat="dd/mm/yy"
+          [showIcon]="true"
+          placeholder="Selecione"
+          class="w-full"
+        ></p-calendar>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tipo</label>
+        <p-dropdown
+          [(ngModel)]="tipoFiltro"
+          [options]="tiposOptions"
+          placeholder="Todos"
+          [showClear]="true"
+          class="w-full"
+        ></p-dropdown>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status</label>
+        <p-dropdown
+          [(ngModel)]="statusFiltro"
+          [options]="statusOptions"
+          placeholder="Todos"
+          [showClear]="true"
+          class="w-full"
+        ></p-dropdown>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Cliente</label>
+        <input
+          pInputText
+          [(ngModel)]="clienteFiltro"
+          placeholder="Nome do cliente"
+          class="w-full"
+        />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Número</label>
+        <input
+          pInputText
+          [(ngModel)]="numeroFiltro"
+          placeholder="Nº da nota"
+          class="w-full"
+        />
+      </div>
+    </div>
+
+    <div class="mt-4 flex gap-2">
+      <button
+        pButton
+        label="Aplicar Filtros"
+        icon="pi pi-filter"
+        (click)="aplicarFiltros()"
+      ></button>
+      <button
+        pButton
+        label="Limpar Filtros"
+        icon="pi pi-filter-slash"
+        class="p-button-outlined p-button-secondary"
+        (click)="limparFiltros()"
+      ></button>
+    </div>
+  </p-card>
+
+  <!-- Tabela -->
+  <p-card>
+    <p-table
+      [value]="notasFiscais()"
+      [paginator]="true"
+      [rows]="10"
+      [rowsPerPageOptions]="[10, 25, 50]"
+      [tableStyle]="{ 'min-width': '70rem' }"
+      styleClass="p-datatable-sm"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Número</th>
+          <th>Tipo</th>
+          <th>Status</th>
+          <th>Cliente</th>
+          <th>Emissão</th>
+          <th class="text-right">Valor Total</th>
+          <th>Chave de Acesso</th>
+          <th class="text-center">Ações</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-nota>
+        <tr>
+          <td>
+            <div class="font-semibold">{{ nota.numero }}/{{ nota.serie }}</div>
+            <div class="text-xs text-gray-500">{{ nota.modelo }}</div>
+          </td>
+          <td>
+            <p-tag
+              [value]="getTipoLabel(nota.tipo)"
+              [severity]="getTipoSeverity(nota.tipo)"
+            ></p-tag>
+          </td>
+          <td>
+            <p-tag
+              [value]="getStatusLabel(nota.status)"
+              [severity]="getStatusSeverity(nota.status)"
+            ></p-tag>
+            @if (nota.status === 'cancelada' && nota.motivoCancelamento) {
+              <div class="text-xs text-red-600 mt-1">{{ nota.motivoCancelamento }}</div>
+            }
+            @if (nota.status === 'rejeitada' && nota.motivoRejeicao) {
+              <div class="text-xs text-orange-600 mt-1">{{ nota.motivoRejeicao }}</div>
+            }
+          </td>
+          <td>
+            <div class="font-medium">{{ nota.clienteNome }}</div>
+            <div class="text-xs text-gray-500">{{ nota.clienteCpfCnpj }}</div>
+          </td>
+          <td>
+            <div>{{ formatDate(nota.dataEmissao) }}</div>
+            @if (nota.dataAutorizacao) {
+              <div class="text-xs text-green-600">
+                Aut: {{ formatDate(nota.dataAutorizacao) }}
+              </div>
+            }
+          </td>
+          <td class="text-right font-semibold">
+            R$ {{ formatCurrency(nota.valorTotal) }}
+          </td>
+          <td>
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-mono text-gray-600 truncate max-w-[200px]">
+                {{ nota.chaveAcesso }}
+              </span>
+              <button
+                pButton
+                icon="pi pi-copy"
+                class="p-button-rounded p-button-text p-button-sm"
+                pTooltip="Copiar chave"
+                tooltipPosition="top"
+                (click)="copiarChaveAcesso(nota.chaveAcesso)"
+              ></button>
+            </div>
+            @if (nota.protocolo) {
+              <div class="text-xs text-gray-500 mt-1">
+                Prot: {{ nota.protocolo }}
+              </div>
+            }
+          </td>
+          <td class="text-center">
+            <div class="flex justify-center gap-1">
+              <button
+                pButton
+                icon="pi pi-eye"
+                class="p-button-rounded p-button-text p-button-info"
+                pTooltip="Visualizar"
+                tooltipPosition="top"
+                (click)="visualizarNota(nota.id)"
+              ></button>
+
+              @if (nota.xmlUrl) {
+                <button
+                  pButton
+                  icon="pi pi-file"
+                  class="p-button-rounded p-button-text p-button-success"
+                  pTooltip="Baixar XML"
+                  tooltipPosition="top"
+                  (click)="downloadXML(nota)"
+                ></button>
+              }
+
+              @if (nota.pdfUrl) {
+                <button
+                  pButton
+                  icon="pi pi-file-pdf"
+                  class="p-button-rounded p-button-text p-button-danger"
+                  pTooltip="Baixar PDF"
+                  tooltipPosition="top"
+                  (click)="downloadPDF(nota)"
+                ></button>
+              }
+
+              @if (nota.status === 'autorizada') {
+                <button
+                  pButton
+                  icon="pi pi-ban"
+                  class="p-button-rounded p-button-text p-button-warning"
+                  pTooltip="Cancelar"
+                  tooltipPosition="top"
+                  (click)="abrirDialogCancelamento(nota)"
+                ></button>
+              }
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="8" class="text-center py-8">
+            <div class="text-gray-500">
+              <i class="pi pi-file text-4xl mb-3"></i>
+              <p>Nenhuma nota fiscal encontrada</p>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="summary">
+        <div class="flex justify-between items-center p-3">
+          <span class="font-semibold">Total de Notas: {{ notasFiscais().length }}</span>
+          <span class="font-semibold">
+            Valor Total: R$ {{ formatCurrency(getValorTotalGeral()) }}
+          </span>
+        </div>
+      </ng-template>
+    </p-table>
+  </p-card>
+</div>
+
+<!-- Dialog: Cancelamento de Nota Fiscal -->
+<p-dialog
+  [(visible)]="showCancelamentoDialog"
+  header="Cancelar Nota Fiscal"
+  [modal]="true"
+  [style]="{ width: '500px' }"
+  [draggable]="false"
+  [resizable]="false"
+>
+  @if (notaParaCancelar) {
+    <div class="space-y-4">
+      <div class="p-4 bg-yellow-50 dark:bg-yellow-900 rounded-lg">
+        <div class="flex items-start gap-2">
+          <i class="pi pi-exclamation-triangle text-yellow-600 dark:text-yellow-400 mt-1"></i>
+          <div class="text-sm text-yellow-800 dark:text-yellow-200">
+            <p class="font-semibold mb-2">Atenção!</p>
+            <p>Você está cancelando a nota fiscal:</p>
+            <p class="font-mono mt-2">{{ notaParaCancelar.numero }}/{{ notaParaCancelar.serie }}</p>
+            <p class="mt-1">Cliente: {{ notaParaCancelar.clienteNome }}</p>
+            <p class="mt-1">Valor: R$ {{ formatCurrency(notaParaCancelar.valorTotal) }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          Motivo do Cancelamento *
+        </label>
+        <textarea
+          pInputTextarea
+          [(ngModel)]="motivoCancelamento"
+          rows="4"
+          placeholder="Informe o motivo do cancelamento (mínimo 15 caracteres)"
+          class="w-full"
+          [maxLength]="255"
+        ></textarea>
+        <small class="text-gray-500">
+          {{ motivoCancelamento.length }}/255 caracteres
+        </small>
+      </div>
+
+      <div class="text-xs text-gray-600 dark:text-gray-400">
+        <p>• O cancelamento é irreversível</p>
+        <p>• Prazo de cancelamento: 24 horas após a autorização</p>
+        <p>• O motivo será registrado na SEFAZ</p>
+      </div>
+    </div>
+  }
+
+  <ng-template pTemplate="footer">
+    <button
+      pButton
+      label="Voltar"
+      icon="pi pi-times"
+      class="p-button-text"
+      (click)="showCancelamentoDialog = false"
+    ></button>
+    <button
+      pButton
+      label="Confirmar Cancelamento"
+      icon="pi pi-check"
+      class="p-button-danger"
+      (click)="confirmarCancelamento()"
+      [disabled]="!motivoCancelamento || motivoCancelamento.length < 15"
+    ></button>
+  </ng-template>
+</p-dialog>
