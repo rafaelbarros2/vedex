@@ -78,10 +78,11 @@ export class AuthService {
   }
 
   /**
-   * Faz login redirecionando para o Keycloak
+   * Faz login redirecionando para o Keycloak.
+   * @param redirectUri URL para retornar após autenticação (padrão: raiz da aplicação)
    */
-  login(): Observable<void> {
-    return from(this.keycloak.login());
+  login(redirectUri?: string): Observable<void> {
+    return from(this.keycloak.login({ redirectUri: redirectUri ?? window.location.origin }));
   }
 
   /**

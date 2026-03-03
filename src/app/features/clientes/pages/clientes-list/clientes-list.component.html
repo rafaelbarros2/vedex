@@ -1,0 +1,170 @@
+<p-toast />
+<p-confirmDialog />
+
+<div class="p-4">
+  <!-- Cabeçalho -->
+  <div class="flex items-center justify-between mb-4">
+    <div>
+      <h1 class="text-2xl font-bold text-surface-900 dark:text-surface-0">Clientes</h1>
+      <p class="text-surface-500 text-sm mt-1">
+        {{ clientesFiltrados().length }} cliente(s) encontrado(s)
+      </p>
+    </div>
+    <p-button
+      label="Novo Cliente"
+      icon="pi pi-plus"
+      (onClick)="novoCliente()"
+    />
+  </div>
+
+  <!-- Filtros -->
+  <p-card styleClass="mb-4">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium text-surface-700 dark:text-surface-300">
+          Buscar por nome ou CPF/CNPJ
+        </label>
+        <p-inputtext
+          [(ngModel)]="filtros.busca"
+          placeholder="Digite para buscar..."
+          class="w-full"
+        />
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium text-surface-700 dark:text-surface-300">Status</label>
+        <p-dropdown
+          [(ngModel)]="filtros.status"
+          [options]="statusOptions"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Todos"
+          class="w-full"
+        />
+      </div>
+
+      <div class="flex items-end">
+        <p-button
+          label="Limpar"
+          icon="pi pi-filter-slash"
+          severity="secondary"
+          [outlined]="true"
+          (onClick)="limparFiltros()"
+          class="w-full"
+        />
+      </div>
+    </div>
+  </p-card>
+
+  <!-- Tabela -->
+  <p-card>
+    <p-table
+      [value]="clientesFiltrados()"
+      [loading]="carregando"
+      [paginator]="true"
+      [rows]="10"
+      [rowsPerPageOptions]="[10, 25, 50]"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} clientes"
+      [globalFilterFields]="['nome', 'cpfCnpj', 'email', 'cidade']"
+      styleClass="p-datatable-sm"
+      [tableStyle]="{ 'min-width': '60rem' }"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th pSortableColumn="nome">
+            Nome <p-sortIcon field="nome" />
+          </th>
+          <th>CPF/CNPJ</th>
+          <th>Email</th>
+          <th>Telefone</th>
+          <th pSortableColumn="cidade">
+            Cidade <p-sortIcon field="cidade" />
+          </th>
+          <th pSortableColumn="dataCadastro">
+            Cadastro <p-sortIcon field="dataCadastro" />
+          </th>
+          <th>Status</th>
+          <th class="text-center">Ações</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-cliente>
+        <tr>
+          <td>
+            <span class="font-medium">{{ cliente.nome }}</span>
+          </td>
+          <td>
+            <span class="font-mono text-sm">{{ formatCpfCnpj(cliente.cpfCnpj) }}</span>
+          </td>
+          <td>{{ cliente.email || '-' }}</td>
+          <td>{{ cliente.telefone || cliente.celular || '-' }}</td>
+          <td>
+            @if (cliente.cidade && cliente.uf) {
+              {{ cliente.cidade }} / {{ cliente.uf }}
+            } @else {
+              <span class="text-surface-400">-</span>
+            }
+          </td>
+          <td>{{ formatDate(cliente.dataCadastro) }}</td>
+          <td>
+            <p-tag
+              [value]="getStatusLabel(cliente.ativo)"
+              [severity]="getStatusSeverity(cliente.ativo)"
+            />
+          </td>
+          <td>
+            <div class="flex gap-1 justify-center">
+              <p-button
+                icon="pi pi-pencil"
+                [rounded]="true"
+                [text]="true"
+                severity="info"
+                pTooltip="Editar"
+                tooltipPosition="top"
+                (onClick)="editarCliente(cliente.id)"
+              />
+              <p-button
+                [icon]="cliente.ativo ? 'pi pi-ban' : 'pi pi-check'"
+                [rounded]="true"
+                [text]="true"
+                [severity]="cliente.ativo ? 'warn' : 'success'"
+                [pTooltip]="cliente.ativo ? 'Inativar' : 'Ativar'"
+                tooltipPosition="top"
+                (onClick)="alterarStatus(cliente)"
+              />
+              <p-button
+                icon="pi pi-trash"
+                [rounded]="true"
+                [text]="true"
+                severity="danger"
+                pTooltip="Excluir"
+                tooltipPosition="top"
+                (onClick)="excluirCliente(cliente, $event)"
+              />
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="8" class="text-center py-8">
+            <div class="flex flex-col items-center gap-2 text-surface-400">
+              <i class="pi pi-users text-4xl"></i>
+              <span>Nenhum cliente encontrado</span>
+              <p-button
+                label="Cadastrar primeiro cliente"
+                icon="pi pi-plus"
+                severity="secondary"
+                [outlined]="true"
+                size="small"
+                (onClick)="novoCliente()"
+              />
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-card>
+</div>

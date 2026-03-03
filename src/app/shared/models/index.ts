@@ -20,3 +20,6 @@ export * from '../../features/caixa/models/caixa.model';
 
 // Notas Fiscais models
 export * from '../../features/notas-fiscais/models/nota-fiscal.model';
+
+// Clientes models
+export * from '../../features/clientes/models/cliente.model';

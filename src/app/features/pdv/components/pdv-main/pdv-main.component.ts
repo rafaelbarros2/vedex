@@ -9,7 +9,7 @@ import { PdvService } from '../../services/pdv.service';
 import { CarrinhoComponent } from '../carrinho/carrinho.component';
 import { ConfigPdvComponent } from '../config-pdv/config-pdv.component';
 import { HistoricoComponent } from '../historico/historico.component';
-import { PagamentoComponent, PaymentData } from '../pagamento/pagamento.component';
+import { PagamentoComponent, PaymentData, PaymentType } from '../pagamento/pagamento.component';
 import { PdvHeaderComponent } from '../pdv-header/pdv-header.component';
 import { ProductGridComponent } from '../product-grid/product-grid.component';
 
@@ -100,7 +100,7 @@ export class PdvMainComponent {
     this.showPaymentDialog.set(true);
   }
 
-  onPaymentSelected(type: 'dinheiro' | 'cartao') {
+  onPaymentSelected(type: PaymentType) {
     this.showPaymentDialog.set(true);
   }
 
@@ -122,32 +122,35 @@ export class PdvMainComponent {
 
   // Eventos do pagamento
   onPaymentConfirmed(paymentData: PaymentData) {
-    try {
-      const vendaId = this.pdvService.finalizarVenda(paymentData.type);
+    const valorPago = paymentData.valorRecebido ?? this.pdvService.total();
 
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Venda Finalizada',
-        detail: `Venda ${vendaId} foi concluída com sucesso!`,
-        life: 5000
-      });
-
-      if (paymentData.type === 'dinheiro' && paymentData.troco && paymentData.troco > 0) {
+    this.pdvService.finalizarVendaAPI(paymentData.type, valorPago).subscribe({
+      next: (vendaId) => {
+        this.showPaymentDialog.set(false);
         this.messageService.add({
-          severity: 'info',
-          summary: 'Troco',
-          detail: `Troco a devolver: R$ ${paymentData.troco.toFixed(2).replace('.', ',')}`,
-          life: 8000
+          severity: 'success',
+          summary: 'Venda Finalizada',
+          detail: `Venda ${vendaId} foi concluída com sucesso!`,
+          life: 5000
+        });
+
+        if (paymentData.type === 'dinheiro' && paymentData.troco && paymentData.troco > 0) {
+          this.messageService.add({
+            severity: 'info',
+            summary: 'Troco',
+            detail: `Troco a devolver: R$ ${paymentData.troco.toFixed(2).replace('.', ',')}`,
+            life: 8000
+          });
+        }
+      },
+      error: (err) => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro na Venda',
+          detail: err.error?.message || err.message || 'Ocorreu um erro ao finalizar a venda'
         });
       }
-
-    } catch (error) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Erro na Venda',
-        detail: 'Ocorreu um erro ao finalizar a venda'
-      });
-    }
+    });
   }
 
   onPaymentCancelled() {

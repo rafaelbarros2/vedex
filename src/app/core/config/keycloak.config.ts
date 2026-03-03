@@ -1,14 +1,8 @@
 import { KeycloakConfig } from 'keycloak-js';
+import { environment } from '../../../environments/environment';
 
-/**
- * Configuração do Keycloak para autenticação SSO
- *
- * IMPORTANTE: Ajuste as URLs conforme ambiente
- * - Development: http://localhost:8180
- * - Production: https://auth.vendex.com.br
- */
 export const keycloakConfig: KeycloakConfig = {
-  url: 'http://localhost:8180',
+  url: environment.keycloakUrl,
   realm: 'vendex-master',
   clientId: 'vedex-frontend'
 };
@@ -23,8 +17,9 @@ export const keycloakInitOptions = {
   // Habilita PKCE (Proof Key for Code Exchange) - mais seguro para SPAs
   pkceMethod: 'S256' as const,
 
-  // Redireciona para esta URL após login
-  redirectUri: window.location.origin,
+  // Redireciona para esta URL após login — usa href para preservar a rota atual
+  // (window.location.origin causava redirect para / depois do check-sso, ignorando a rota)
+  redirectUri: window.location.href,
 
   // Redireciona para esta URL após logout
   postLogoutRedirectUri: window.location.origin,
@@ -43,11 +38,3 @@ export const bearerExcludedUrls: string[] = [
   '/api/auth/health'
 ];
 
-/**
- * Configuração de ambiente
- */
-export const environment = {
-  production: false,
-  keycloak: keycloakConfig,
-  apiUrl: 'http://localhost:8080/api'
-};

@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpInterceptor, HttpRequest, HttpHandler, HttpEvent } from '@angular/common/http';
-import { Observable, from, switchMap } from 'rxjs';
+import { Observable, from, switchMap, catchError, of } from 'rxjs';
 import { AuthService } from './auth.service';
 
 @Injectable()
@@ -13,7 +13,11 @@ export class JwtInterceptor implements HttpInterceptor {
       return next.handle(req);
     }
 
-    return from(this.authService.getToken()).pipe(
+    // Atualiza o token se estiver expirando em menos de 70 segundos,
+    // garantindo que o PDV nunca receba 401 por token vencido durante uso contínuo.
+    return this.authService.updateToken(70).pipe(
+      catchError(() => of(false)), // se refresh falhar, tenta com token atual
+      switchMap(() => from(this.authService.getToken())),
       switchMap(token => {
         const tenantId = this.authService.getTenantId();
 

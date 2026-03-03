@@ -12,7 +12,7 @@ import { PasswordModule } from 'primeng/password';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { UsuariosService } from '../../services/usuarios.service';
-import { Usuario, UsuarioForm, PerfilUsuario, StatusUsuario } from '../../models/usuario.model';
+import { UsuarioForm, PerfilUsuario, StatusUsuario } from '../../models/usuario.model';
 
 @Component({
   selector: 'app-usuario-form',
@@ -36,6 +36,7 @@ import { Usuario, UsuarioForm, PerfilUsuario, StatusUsuario } from '../../models
 export class UsuarioFormComponent implements OnInit {
   usuarioId: number | null = null;
   isEditMode = false;
+  salvando = false;
 
   // Form fields
   nome = '';
@@ -91,24 +92,25 @@ export class UsuarioFormComponent implements OnInit {
   }
 
   carregarUsuario() {
-    const usuario = this.usuariosService.getUsuarioById(this.usuarioId!);
-    if (!usuario) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Erro',
-        detail: 'Usuário não encontrado'
-      });
-      this.router.navigate(['/usuarios']);
-      return;
-    }
-
-    this.nome = usuario.nome;
-    this.email = usuario.email;
-    this.cpf = usuario.cpf || '';
-    this.telefone = usuario.telefone || '';
-    this.perfil = usuario.perfil;
-    this.status = usuario.status;
-    this.permissoes = usuario.permissoes || this.permissoes;
+    this.usuariosService.buscarPorIdAPI(this.usuarioId!).subscribe({
+      next: (usuario) => {
+        this.nome = usuario.nome;
+        this.email = usuario.email;
+        this.cpf = usuario.cpf || '';
+        this.telefone = usuario.telefone || '';
+        this.perfil = usuario.perfil;
+        this.status = usuario.status;
+        this.permissoes = usuario.permissoes || this.permissoes;
+      },
+      error: () => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro',
+          detail: 'Usuário não encontrado'
+        });
+        this.router.navigate(['/usuarios']);
+      }
+    });
   }
 
   onPerfilChange() {
@@ -221,33 +223,31 @@ export class UsuarioFormComponent implements OnInit {
       usuarioForm.senha = this.senha;
     }
 
-    try {
-      if (this.isEditMode) {
-        this.usuariosService.atualizarUsuario(this.usuarioId!, usuarioForm);
+    this.salvando = true;
+
+    const operacao$ = this.isEditMode
+      ? this.usuariosService.atualizarAPI(this.usuarioId!, usuarioForm)
+      : this.usuariosService.criarAPI(usuarioForm);
+
+    operacao$.subscribe({
+      next: () => {
         this.messageService.add({
           severity: 'success',
           summary: 'Sucesso',
-          detail: 'Usuário atualizado com sucesso'
+          detail: this.isEditMode ? 'Usuário atualizado com sucesso' : 'Usuário criado com sucesso'
         });
-      } else {
-        this.usuariosService.criarUsuario(usuarioForm);
+        setTimeout(() => this.router.navigate(['/usuarios']), 1500);
+      },
+      error: (error) => {
+        this.salvando = false;
+        const msg = error?.error?.mensagem || error?.message || 'Erro ao salvar usuário';
         this.messageService.add({
-          severity: 'success',
-          summary: 'Sucesso',
-          detail: 'Usuário criado com sucesso'
+          severity: 'error',
+          summary: 'Erro',
+          detail: msg
         });
       }
-
-      setTimeout(() => {
-        this.router.navigate(['/usuarios']);
-      }, 1500);
-    } catch (error: any) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Erro',
-        detail: error.message || 'Erro ao salvar usuário'
-      });
-    }
+    });
   }
 
   cancelar() {

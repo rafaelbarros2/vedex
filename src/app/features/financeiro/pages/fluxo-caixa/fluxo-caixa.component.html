@@ -1,0 +1,112 @@
+<p-toast></p-toast>
+
+<div class="p-4">
+  <!-- Cabeçalho -->
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-white">Fluxo de Caixa</h1>
+      <p class="text-gray-500 text-sm mt-1">Entradas e saídas por período</p>
+    </div>
+  </div>
+
+  <!-- Filtros de período -->
+  <p-card class="mb-4">
+    <div class="flex flex-wrap gap-2 items-center">
+      <span class="text-sm font-medium text-gray-600 dark:text-gray-300 mr-2">Período:</span>
+      <button
+        *ngFor="let p of [{label: 'Hoje', value: 'hoje'}, {label: '7 dias', value: '7d'}, {label: '30 dias', value: '30d'}, {label: '90 dias', value: '90d'}]"
+        (click)="selecionarPeriodo(p.value)"
+        class="px-3 py-1.5 rounded text-sm font-medium border transition-colors"
+        [class.bg-blue-600]="periodoSelecionado() === p.value"
+        [class.text-white]="periodoSelecionado() === p.value"
+        [class.border-blue-600]="periodoSelecionado() === p.value"
+        [class.bg-white]="periodoSelecionado() !== p.value"
+        [class.text-gray-700]="periodoSelecionado() !== p.value"
+        [class.border-gray-300]="periodoSelecionado() !== p.value">
+        {{ p.label }}
+      </button>
+      <div class="flex items-center gap-2 ml-4">
+        <p-calendar [(ngModel)]="dataInicio" dateFormat="dd/mm/yy" [showIcon]="true" placeholder="Início" class="w-36"></p-calendar>
+        <span class="text-gray-400">até</span>
+        <p-calendar [(ngModel)]="dataFim" dateFormat="dd/mm/yy" [showIcon]="true" placeholder="Fim" class="w-36"></p-calendar>
+        <p-button label="Filtrar" icon="pi pi-search" (onClick)="carregar()" severity="secondary" size="small"></p-button>
+      </div>
+    </div>
+  </p-card>
+
+  <!-- Cards de resumo -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <p-card>
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+          <i class="pi pi-arrow-up text-green-600"></i>
+        </div>
+        <div>
+          <p class="text-xs text-gray-500 uppercase tracking-wide">Total Entradas</p>
+          <p class="text-xl font-bold text-green-600">{{ formatarMoeda(totalEntradas()) }}</p>
+        </div>
+      </div>
+    </p-card>
+    <p-card>
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+          <i class="pi pi-arrow-down text-red-600"></i>
+        </div>
+        <div>
+          <p class="text-xs text-gray-500 uppercase tracking-wide">Total Saídas</p>
+          <p class="text-xl font-bold text-red-600">{{ formatarMoeda(totalSaidas()) }}</p>
+        </div>
+      </div>
+    </p-card>
+    <p-card>
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full flex items-center justify-center"
+          [class.bg-blue-100]="saldo() >= 0"
+          [class.bg-orange-100]="saldo() < 0">
+          <i class="pi pi-wallet"
+            [class.text-blue-600]="saldo() >= 0"
+            [class.text-orange-600]="saldo() < 0"></i>
+        </div>
+        <div>
+          <p class="text-xs text-gray-500 uppercase tracking-wide">Saldo do Período</p>
+          <p class="text-xl font-bold"
+            [class.text-blue-600]="saldo() >= 0"
+            [class.text-orange-600]="saldo() < 0">{{ formatarMoeda(saldo()) }}</p>
+        </div>
+      </div>
+    </p-card>
+  </div>
+
+  <!-- Tabela diária -->
+  <p-card header="Fluxo por Dia">
+    <p-table [value]="fluxoPorDia()" [loading]="carregando"
+             [paginator]="true" [rows]="15" [rowsPerPageOptions]="[15, 30, 60]"
+             styleClass="p-datatable-sm">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Data</th>
+          <th class="text-right">Entradas</th>
+          <th class="text-right">Saídas</th>
+          <th class="text-right">Saldo</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-dia>
+        <tr>
+          <td>{{ formatarDataExibicao(dia.data) }}</td>
+          <td class="text-right text-green-600 font-medium">{{ formatarMoeda(dia.entradas) }}</td>
+          <td class="text-right text-red-600 font-medium">{{ formatarMoeda(dia.saidas) }}</td>
+          <td class="text-right font-bold"
+              [class.text-blue-600]="dia.saldo >= 0"
+              [class.text-orange-600]="dia.saldo < 0">{{ formatarMoeda(dia.saldo) }}</td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="4" class="text-center text-gray-500 py-6">
+            Nenhum lançamento encontrado no período selecionado.
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-card>
+</div>

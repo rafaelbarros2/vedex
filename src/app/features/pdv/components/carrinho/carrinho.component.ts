@@ -4,6 +4,7 @@ import { ButtonModule } from 'primeng/button';
 import { DividerModule } from 'primeng/divider';
 import { TagModule } from 'primeng/tag';
 import { CarrinhoItem } from '../../../../shared/models/carrinho.model';
+import { PaymentType } from '../pagamento/pagamento.component';
 
 @Component({
   selector: 'app-carrinho',
@@ -20,7 +21,7 @@ export class CarrinhoComponent {
   @Output() itemRemoved = new EventEmitter<number>();
   @Output() cartCleared = new EventEmitter<void>();
   @Output() finalizeSale = new EventEmitter<void>();
-  @Output() paymentSelected = new EventEmitter<'dinheiro' | 'cartao'>();
+  @Output() paymentSelected = new EventEmitter<PaymentType>();
   @Output() discountRequested = new EventEmitter<void>();
   @Output() customerRequested = new EventEmitter<void>();
 
@@ -51,7 +52,7 @@ export class CarrinhoComponent {
     this.finalizeSale.emit();
   }
 
-  onPaymentSelect(type: 'dinheiro' | 'cartao') {
+  onPaymentSelect(type: PaymentType) {
     this.paymentSelected.emit(type);
   }
 

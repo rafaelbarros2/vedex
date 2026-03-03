@@ -1,0 +1,97 @@
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<div class="p-4">
+  <!-- Cabeçalho -->
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-white">Contas a Receber</h1>
+      <p class="text-gray-500 text-sm mt-1">Gerencie seus créditos e valores a receber</p>
+    </div>
+    <p-button label="Nova Conta" icon="pi pi-plus" (onClick)="nova()"></p-button>
+  </div>
+
+  <!-- Filtros -->
+  <p-card class="mb-4">
+    <div class="flex flex-wrap gap-3">
+      <div class="flex-1 min-w-48">
+        <input pInputText
+          [(ngModel)]="filtros.busca"
+          placeholder="Buscar por descrição, categoria ou cliente..."
+          class="w-full" />
+      </div>
+      <div class="w-48">
+        <p-dropdown
+          [options]="statusOptions"
+          [(ngModel)]="filtros.status"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Status"
+          class="w-full">
+        </p-dropdown>
+      </div>
+    </div>
+  </p-card>
+
+  <!-- Tabela -->
+  <p-card>
+    <p-table [value]="contasFiltradas()" [loading]="carregando"
+             [paginator]="true" [rows]="10" [rowsPerPageOptions]="[10, 25, 50]"
+             styleClass="p-datatable-sm">
+      <ng-template pTemplate="header">
+        <tr>
+          <th pSortableColumn="descricao">Descrição <p-sortIcon field="descricao"></p-sortIcon></th>
+          <th>Categoria / Cliente</th>
+          <th pSortableColumn="dataVencimento">Vencimento <p-sortIcon field="dataVencimento"></p-sortIcon></th>
+          <th class="text-right" pSortableColumn="valor">Valor <p-sortIcon field="valor"></p-sortIcon></th>
+          <th>Status</th>
+          <th class="text-center">Ações</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-conta>
+        <tr>
+          <td>
+            <span class="font-medium">{{ conta.descricao }}</span>
+            <div *ngIf="conta.dataRecebimento" class="text-xs text-green-600 mt-0.5">
+              Recebido em {{ formatarData(conta.dataRecebimento) }}
+            </div>
+          </td>
+          <td>
+            <div class="text-gray-500 text-sm">{{ conta.categoria || '—' }}</div>
+            <div *ngIf="conta.clienteNome" class="text-xs text-blue-600">{{ conta.clienteNome }}</div>
+          </td>
+          <td>
+            <span [class.text-red-600]="conta.status === 'VENCIDO'" [class.font-medium]="conta.status === 'VENCIDO'">
+              {{ formatarData(conta.dataVencimento) }}
+            </span>
+          </td>
+          <td class="text-right font-semibold">{{ formatarMoeda(conta.valor) }}</td>
+          <td>
+            <p-tag [value]="conta.statusLabel || conta.status" [severity]="getStatusSeverity(conta.status)"></p-tag>
+          </td>
+          <td class="text-center">
+            <div class="flex items-center justify-center gap-1">
+              <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="secondary" size="small"
+                (onClick)="editar(conta)" pTooltip="Editar"></p-button>
+              <p-button *ngIf="conta.status === 'PENDENTE' || conta.status === 'VENCIDO'"
+                icon="pi pi-check" [rounded]="true" [text]="true" severity="success" size="small"
+                (onClick)="marcarComoRecebido(conta, $event)" pTooltip="Marcar como Recebido"></p-button>
+              <p-button *ngIf="conta.status === 'PENDENTE' || conta.status === 'VENCIDO'"
+                icon="pi pi-ban" [rounded]="true" [text]="true" severity="secondary" size="small"
+                (onClick)="cancelar(conta, $event)" pTooltip="Cancelar"></p-button>
+              <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" size="small"
+                (onClick)="excluir(conta, $event)" pTooltip="Excluir"></p-button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="6" class="text-center text-gray-500 py-6">
+            Nenhuma conta a receber encontrada.
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-card>
+</div>

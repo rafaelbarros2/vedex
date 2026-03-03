@@ -54,15 +54,17 @@ export class HistoricoMovimentacaoComponent implements OnInit {
     const produtoEncontrado = this.estoqueService.getProdutoById(this.produtoId);
     this.produto.set(produtoEncontrado);
 
-    if (produtoEncontrado) {
-      const historico = this.estoqueService.getHistoricoProduto(this.produtoId);
-      this.movimentacoes.set(historico);
-    }
+    this.estoqueService.getHistoricoProdutoAPI(this.produtoId).subscribe({
+      next: historico => this.movimentacoes.set(historico),
+      error: err => console.error('Erro ao carregar histórico:', err)
+    });
   }
 
   carregarTodasMovimentacoes() {
-    const todas = this.estoqueService.getTodasMovimentacoes();
-    this.movimentacoes.set(todas);
+    this.estoqueService.getTodasMovimentacoesAPI().subscribe({
+      next: todas => this.movimentacoes.set(todas),
+      error: err => console.error('Erro ao carregar movimentações:', err)
+    });
   }
 
   getTipoSeverity(tipo: string): string {

@@ -1,6 +1,6 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, tap, catchError, of } from 'rxjs';
+import { Observable, tap, catchError, of, map } from 'rxjs';
 import { Produto, ProdutoFiltros, Categoria, Fornecedor } from '../../../shared/models/produto.model';
 import { environment } from '../../../../environments/environment';
 import { CategoriaService, CategoriaDTO } from './categoria.service';
@@ -50,14 +50,12 @@ export class ProdutoService {
   listarTodosAPI(): Observable<Produto[]> {
     return this.http.get<any[]>(this.apiUrl, { headers: this.getHeaders() })
       .pipe(
-        tap(produtos => {
-          const produtosConvertidos = produtos.map(p => this.converterDTOParaModel(p));
-          this.produtos.set(produtosConvertidos);
-        }),
+        map(produtos => produtos.map(p => this.converterDTOParaModel(p))),
+        tap(produtosConvertidos => this.produtos.set(produtosConvertidos)),
         catchError(error => {
           console.error('Erro ao listar produtos:', error);
-          this.produtos.set([]); // Limpa lista em caso de erro
-          throw error; // Propaga erro para componente tratar
+          this.produtos.set([]);
+          throw error;
         })
       );
   }

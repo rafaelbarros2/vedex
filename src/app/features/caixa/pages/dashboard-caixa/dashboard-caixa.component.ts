@@ -1,4 +1,6 @@
-import { Component, OnInit, computed, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
+import { toObservable } from '@angular/core/rxjs-interop';
+import { filter, take } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -42,8 +44,12 @@ import { Lancamento, TipoLancamento, FormaPagamento } from '../../models/caixa.m
   styleUrl: './dashboard-caixa.component.css'
 })
 export class DashboardCaixaComponent implements OnInit {
-  caixaAtual = computed(() => this.caixaService.caixaAtual());
-  resumo = computed(() => this.caixaService.resumoCaixaAtual());
+  private caixaService = inject(CaixaService);
+  private router = inject(Router);
+  private messageService = inject(MessageService);
+
+  caixaAtual = this.caixaService.caixaAtual;
+  resumo = this.caixaService.resumoCaixaAtual;
   lancamentos = signal<Lancamento[]>([]);
 
   // Dialogs
@@ -79,21 +85,24 @@ export class DashboardCaixaComponent implements OnInit {
     { label: 'PIX', value: 'pix' }
   ];
 
-  constructor(
-    private caixaService: CaixaService,
-    private router: Router,
-    private messageService: MessageService
-  ) { }
+  constructor() {
+    // toObservable + take(1): aguarda caixaLoaded ser true UMA vez e inicializa
+    // Evita NG0600 (escrita de signal dentro de effect) e o race condition
+    toObservable(this.caixaService.caixaLoaded)
+      .pipe(filter(loaded => loaded), take(1))
+      .subscribe(() => {
+        if (!this.caixaService.hasCaixaAberto()) {
+          this.router.navigate(['/caixa/abertura']);
+          return;
+        }
+        this.carregarCategorias();
+        this.carregarLancamentos();
+      });
+  }
 
   ngOnInit() {
-    // Verificar se há caixa aberto
-    if (!this.caixaService.hasCaixaAberto()) {
-      this.router.navigate(['/caixa/abertura']);
-      return;
-    }
-
-    this.carregarCategorias();
-    this.carregarLancamentos();
+    // Inicialização movida para o constructor via toObservable
+    // para aguardar o carregamento assíncrono de caixaAtual
   }
 
   carregarCategorias() {
@@ -165,8 +174,7 @@ export class DashboardCaixaComponent implements OnInit {
         });
 
         this.showLancamentoDialog = false;
-        // carregarLancamentos is handled by the service updating the signal, 
-        // but we might want to refresh just in case or rely on the signal update from service
+        this.carregarLancamentos();
       },
       error: (error) => {
         this.messageService.add({

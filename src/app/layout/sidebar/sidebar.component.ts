@@ -49,13 +49,26 @@ export class SidebarComponent {
         { label: 'Lista de Produtos', route: '/produtos' },
         { label: 'Cadastrar Produto', route: '/produtos/novo' },
         { label: 'Categorias', route: '/categorias' },
-        { label: 'Nova Categoria', route: '/categorias/novo' },
-        { label: 'Importar/Exportar', route: '/produtos/importar' }
+        { label: 'Nova Categoria', route: '/categorias/novo' }
+      ]
+    },
+    {
+      label: 'Vendas',
+      icon: '🧾',
+      route: '/vendas/historico'
+    },
+    {
+      label: 'Clientes',
+      icon: '👥',
+      expanded: false,
+      items: [
+        { label: 'Lista de Clientes', route: '/clientes' },
+        { label: 'Novo Cliente', route: '/clientes/novo' }
       ]
     },
     {
       label: 'Estoque',
-      icon: '📊',
+      icon: '📦',
       expanded: false,
       items: [
         { label: 'Controle de Estoque', route: '/estoque' },
@@ -69,6 +82,16 @@ export class SidebarComponent {
       items: [
         { label: 'Dashboard', route: '/caixa' },
         { label: 'Abrir Caixa', route: '/caixa/abertura' }
+      ]
+    },
+    {
+      label: 'Financeiro',
+      icon: '💰',
+      expanded: false,
+      items: [
+        { label: 'Fluxo de Caixa', route: '/financeiro/fluxo' },
+        { label: 'Contas a Pagar', route: '/financeiro/pagar' },
+        { label: 'Contas a Receber', route: '/financeiro/receber' }
       ]
     },
     {

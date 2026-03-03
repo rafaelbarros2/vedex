@@ -2,6 +2,7 @@ import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { Observable } from 'rxjs';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
@@ -64,7 +65,19 @@ export class UsuariosListComponent implements OnInit {
   }
 
   carregarUsuarios() {
-    this.usuarios.set(this.usuariosService.getUsuarios());
+    this.usuariosService.listarTodosAPI().subscribe({
+      next: (lista) => {
+        this.usuarios.set(lista);
+      },
+      error: (error) => {
+        console.error('Erro ao carregar usuários:', error);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro',
+          detail: 'Não foi possível carregar os usuários'
+        });
+      }
+    });
   }
 
   buscarUsuarios() {
@@ -106,31 +119,63 @@ export class UsuariosListComponent implements OnInit {
 
   deletarUsuario(usuario: Usuario) {
     this.confirmationService.confirm({
-      message: `Tem certeza que deseja excluir o usuário ${usuario.nome}?`,
-      header: 'Confirmar Exclusão',
+      message: `Tem certeza que deseja inativar o usuário ${usuario.nome}?`,
+      header: 'Confirmar Inativação',
       icon: 'pi pi-exclamation-triangle',
       acceptLabel: 'Sim',
       rejectLabel: 'Não',
       accept: () => {
-        this.usuariosService.deletarUsuario(usuario.id);
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Sucesso',
-          detail: 'Usuário excluído com sucesso'
+        this.usuariosService.inativarAPI(usuario.id).subscribe({
+          next: () => {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Sucesso',
+              detail: 'Usuário inativado com sucesso'
+            });
+            this.carregarUsuarios();
+          },
+          error: (error) => {
+            const msg = error?.error?.mensagem || 'Erro ao inativar usuário';
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Erro',
+              detail: msg
+            });
+          }
         });
-        this.carregarUsuarios();
       }
     });
   }
 
   alterarStatus(usuario: Usuario, novoStatus: StatusUsuario) {
-    this.usuariosService.alterarStatus(usuario.id, novoStatus);
-    this.messageService.add({
-      severity: 'info',
-      summary: 'Status Alterado',
-      detail: `Status do usuário alterado para ${novoStatus}`
+    let operacao$: Observable<void>;
+
+    if (novoStatus === 'ativo') {
+      operacao$ = this.usuariosService.ativarAPI(usuario.id);
+    } else if (novoStatus === 'bloqueado') {
+      operacao$ = this.usuariosService.bloquearAPI(usuario.id);
+    } else {
+      operacao$ = this.usuariosService.inativarAPI(usuario.id);
+    }
+
+    operacao$.subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'info',
+          summary: 'Status Alterado',
+          detail: `Status do usuário alterado para ${novoStatus}`
+        });
+        this.carregarUsuarios();
+      },
+      error: (error) => {
+        const msg = error?.error?.mensagem || 'Erro ao alterar status';
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro',
+          detail: msg
+        });
+      }
     });
-    this.carregarUsuarios();
   }
 
   getPerfilLabel(perfil: PerfilUsuario): string {

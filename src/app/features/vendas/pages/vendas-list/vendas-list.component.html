@@ -1,0 +1,173 @@
+<p-toast></p-toast>
+
+<div class="p-6">
+  <!-- Header -->
+  <div class="flex justify-between items-center mb-6">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-100">Histórico de Vendas</h1>
+      <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Consulte e gerencie as vendas realizadas</p>
+    </div>
+    <button
+      pButton
+      label="Ir para PDV"
+      icon="pi pi-shopping-cart"
+      class="p-button-success"
+      (click)="irParaPDV()"
+    ></button>
+  </div>
+
+  <!-- Filtros -->
+  <p-card class="mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div class="md:col-span-2">
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Buscar</label>
+        <span class="p-input-icon-left w-full">
+          <i class="pi pi-search"></i>
+          <input
+            pInputText
+            [(ngModel)]="filtros.busca"
+            placeholder="Número da venda ou nome do cliente"
+            class="w-full"
+          />
+        </span>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status</label>
+        <p-dropdown
+          [(ngModel)]="filtros.status"
+          [options]="statusOptions"
+          placeholder="Todos"
+          class="w-full"
+        ></p-dropdown>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Pagamento</label>
+        <p-dropdown
+          [(ngModel)]="filtros.formaPagamento"
+          [options]="pagamentoOptions"
+          placeholder="Todos"
+          class="w-full"
+        ></p-dropdown>
+      </div>
+    </div>
+
+    <div class="mt-4 flex gap-2">
+      <button
+        pButton
+        label="Limpar Filtros"
+        icon="pi pi-filter-slash"
+        class="p-button-outlined p-button-secondary"
+        (click)="limparFiltros()"
+      ></button>
+      <button
+        pButton
+        label="Atualizar"
+        icon="pi pi-refresh"
+        class="p-button-outlined"
+        [loading]="carregando"
+        (click)="carregarVendas()"
+      ></button>
+    </div>
+  </p-card>
+
+  <!-- Tabela -->
+  <p-card>
+    <p-table
+      [value]="vendasFiltradas()"
+      [paginator]="true"
+      [rows]="10"
+      [rowsPerPageOptions]="[10, 25, 50]"
+      [tableStyle]="{ 'min-width': '60rem' }"
+      styleClass="p-datatable-sm"
+      [loading]="carregando"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Nº Venda</th>
+          <th>Data / Hora</th>
+          <th>Cliente</th>
+          <th>Operador</th>
+          <th>Pagamento</th>
+          <th class="text-right">Total</th>
+          <th class="text-center">Status</th>
+          <th class="text-center">Ações</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-venda>
+        <tr>
+          <td>
+            <span class="font-mono font-semibold text-blue-600 dark:text-blue-400">
+              {{ venda.numeroVenda }}
+            </span>
+          </td>
+          <td>
+            <div class="text-sm">{{ formatDate(venda.dataVenda) }}</div>
+          </td>
+          <td>
+            @if (venda.cliente) {
+              <div class="font-medium">{{ venda.cliente.nome }}</div>
+              @if (venda.cliente.cpfCnpj) {
+                <div class="text-xs text-gray-500">{{ venda.cliente.cpfCnpj }}</div>
+              }
+            } @else {
+              <span class="text-gray-400 italic">Consumidor final</span>
+            }
+          </td>
+          <td>
+            <span class="text-sm">{{ venda.usuario?.nome || '-' }}</span>
+          </td>
+          <td>
+            <div class="flex items-center gap-2">
+              <i [class]="getFormaPagamentoIcon(venda.formaPagamento)" class="text-gray-500"></i>
+              <span class="text-sm">{{ getFormaPagamentoLabel(venda.formaPagamento) }}</span>
+            </div>
+          </td>
+          <td class="text-right">
+            <span class="font-semibold">{{ formatCurrency(venda.total) }}</span>
+          </td>
+          <td class="text-center">
+            <p-tag
+              [value]="getStatusLabel(venda.status)"
+              [severity]="getStatusSeverity(venda.status)"
+            ></p-tag>
+          </td>
+          <td class="text-center">
+            <button
+              pButton
+              icon="pi pi-eye"
+              class="p-button-rounded p-button-text p-button-info"
+              pTooltip="Ver detalhes"
+              tooltipPosition="top"
+              (click)="verDetalhes(venda.id)"
+            ></button>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="8" class="text-center py-8">
+            <div class="text-gray-500">
+              <i class="pi pi-shopping-bag text-4xl mb-3 block"></i>
+              <p>Nenhuma venda encontrada</p>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="summary">
+        <div class="flex justify-between items-center p-3">
+          <span class="font-semibold">
+            {{ vendasFiltradas().length }} venda(s) encontrada(s)
+          </span>
+          <span class="font-bold text-green-600">
+            Total concluídas: {{ formatCurrency(totalVendas) }}
+          </span>
+        </div>
+      </ng-template>
+    </p-table>
+  </p-card>
+</div>

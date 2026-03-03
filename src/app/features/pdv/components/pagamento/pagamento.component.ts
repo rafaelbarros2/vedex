@@ -8,8 +8,10 @@ import { RadioButtonModule } from 'primeng/radiobutton';
 import { DividerModule } from 'primeng/divider';
 import { CarrinhoItem } from '../../../../shared/models/carrinho.model';
 
+export type PaymentType = 'dinheiro' | 'pix' | 'cartao_debito' | 'cartao_credito';
+
 export interface PaymentData {
-  type: 'dinheiro' | 'cartao';
+  type: PaymentType;
   valorRecebido?: number;
   troco?: number;
 }
@@ -39,18 +41,22 @@ export class PagamentoComponent {
   @Output() paymentConfirmed = new EventEmitter<PaymentData>();
   @Output() paymentCancelled = new EventEmitter<void>();
 
-  paymentType: 'dinheiro' | 'cartao' = 'dinheiro';
+  paymentType: PaymentType = 'dinheiro';
   valorRecebido = 0;
 
   get troco(): number {
     return this.valorRecebido > this.total ? this.valorRecebido - this.total : 0;
   }
 
+  get isDinheiro(): boolean {
+    return this.paymentType === 'dinheiro';
+  }
+
   get canConfirm(): boolean {
-    if (this.paymentType === 'cartao') {
-      return true;
+    if (this.isDinheiro) {
+      return this.valorRecebido >= this.total;
     }
-    return this.valorRecebido >= this.total;
+    return true; // PIX, débito e crédito: sempre permite confirmar
   }
 
   onHide() {
@@ -66,8 +72,8 @@ export class PagamentoComponent {
   onConfirm() {
     const paymentData: PaymentData = {
       type: this.paymentType,
-      valorRecebido: this.paymentType === 'dinheiro' ? this.valorRecebido : this.total,
-      troco: this.troco
+      valorRecebido: this.isDinheiro ? this.valorRecebido : this.total,
+      troco: this.isDinheiro ? this.troco : 0
     };
 
     this.paymentConfirmed.emit(paymentData);

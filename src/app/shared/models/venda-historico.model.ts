@@ -9,7 +9,7 @@ export interface VendaHistorico {
   subtotal: number;
   desconto: number;
   total: number;
-  formaPagamento: 'dinheiro' | 'cartao';
+  formaPagamento: 'dinheiro' | 'cartao' | 'cartao_debito' | 'cartao_credito' | 'pix';
   valorRecebido?: number;
   troco?: number;
   status: 'concluida' | 'cancelada' | 'pendente';
@@ -29,7 +29,7 @@ export interface VendaHistoricoItem {
 export interface FiltroHistorico {
   dataInicio?: Date;
   dataFim?: Date;
-  formaPagamento?: 'dinheiro' | 'cartao' | 'todas';
+  formaPagamento?: 'dinheiro' | 'cartao' | 'cartao_debito' | 'cartao_credito' | 'pix' | 'todas';
   status?: 'concluida' | 'cancelada' | 'pendente' | 'todas';
   operador?: string;
   numeroVenda?: string;

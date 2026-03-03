@@ -8,6 +8,10 @@ export const routes: Routes = [
     loadComponent: () => import('./features/auth/login/login.component').then(c => c.LoginComponent)
   },
   {
+    path: '403',
+    loadComponent: () => import('./features/auth/forbidden/forbidden.component').then(c => c.ForbiddenComponent)
+  },
+  {
     path: '',
     redirectTo: '/dashboard',
     pathMatch: 'full'
@@ -39,15 +43,13 @@ export const routes: Routes = [
       // Vendas
       {
         path: 'vendas',
-        children: [
-          { path: 'nova', loadComponent: () => import('./features/dashboard/dashboard.component').then(c => c.DashboardComponent) },
-          { path: 'historico', loadComponent: () => import('./features/dashboard/dashboard.component').then(c => c.DashboardComponent) },
-          { path: 'relatorios', loadComponent: () => import('./features/dashboard/dashboard.component').then(c => c.DashboardComponent) },
-          { path: 'devolucoes', loadComponent: () => import('./features/dashboard/dashboard.component').then(c => c.DashboardComponent) }
-        ]
+        loadChildren: () => import('./features/vendas/vendas.routes').then(r => r.vendasRoutes)
       },
       // Outras rotas
-      { path: 'clientes', loadComponent: () => import('./features/dashboard/dashboard.component').then(c => c.DashboardComponent) },
+      {
+        path: 'clientes',
+        loadChildren: () => import('./features/clientes/clientes.routes').then(r => r.clientesRoutes)
+      },
       { path: 'cupons', loadComponent: () => import('./features/dashboard/dashboard.component').then(c => c.DashboardComponent) },
       {
         path: 'estoque',
@@ -62,12 +64,7 @@ export const routes: Routes = [
       // Financeiro
       {
         path: 'financeiro',
-        children: [
-          { path: 'pagar', loadComponent: () => import('./features/dashboard/dashboard.component').then(c => c.DashboardComponent) },
-          { path: 'receber', loadComponent: () => import('./features/dashboard/dashboard.component').then(c => c.DashboardComponent) },
-          { path: 'fluxo', loadComponent: () => import('./features/dashboard/dashboard.component').then(c => c.DashboardComponent) },
-          { path: 'bancos', loadComponent: () => import('./features/dashboard/dashboard.component').then(c => c.DashboardComponent) }
-        ]
+        loadChildren: () => import('./features/financeiro/financeiro.routes').then(r => r.financeiroRoutes)
       },
       { path: 'relatorios', loadComponent: () => import('./features/dashboard/dashboard.component').then(c => c.DashboardComponent) },
       {
@@ -88,6 +85,11 @@ export const routes: Routes = [
           { path: 'fiscal', loadComponent: () => import('./features/dashboard/dashboard.component').then(c => c.DashboardComponent) },
           { path: 'integracoes', loadComponent: () => import('./features/dashboard/dashboard.component').then(c => c.DashboardComponent) }
         ]
+      },
+      {
+        path: 'super-admin',
+        loadChildren: () =>
+          import('./features/super-admin/super-admin.routes').then(r => r.superAdminRoutes)
       }
     ]
   }

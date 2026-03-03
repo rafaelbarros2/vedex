@@ -19,6 +19,7 @@ interface VendaParaNF {
   data: Date;
   clienteNome?: string;
   clienteCpfCnpj?: string;
+  clienteId?: number;
   valorTotal: number;
   formaPagamento: string;
   produtos: {
@@ -65,6 +66,7 @@ export class NotaFiscalFormComponent implements OnInit {
   // Dados da nota
   tipoNota: TipoNotaFiscal = 'nfce';
   observacoes = '';
+  isEmitindo = false;
 
   tiposOptions = [
     { label: 'NFC-e (Cupom Fiscal Eletrônico)', value: 'nfce' },
@@ -83,49 +85,12 @@ export class NotaFiscalFormComponent implements OnInit {
   }
 
   carregarVendas() {
-    // Mock de vendas - em produção viria do backend
-    const vendasMock: VendaParaNF[] = [
-      {
-        id: 1,
-        numeroVenda: 'VND-001',
-        data: new Date('2024-01-15'),
-        clienteNome: 'João Silva',
-        clienteCpfCnpj: '123.456.789-00',
-        valorTotal: 150.50,
-        formaPagamento: 'Dinheiro',
-        produtos: [
-          { nome: 'Produto A', quantidade: 2, valorUnitario: 50.00, valorTotal: 100.00 },
-          { nome: 'Produto B', quantidade: 1, valorUnitario: 50.50, valorTotal: 50.50 }
-        ],
-        temNotaFiscal: false
-      },
-      {
-        id: 2,
-        numeroVenda: 'VND-002',
-        data: new Date('2024-01-15'),
-        clienteNome: 'Maria Santos',
-        clienteCpfCnpj: '987.654.321-00',
-        valorTotal: 320.00,
-        formaPagamento: 'Cartão',
-        produtos: [
-          { nome: 'Produto C', quantidade: 4, valorUnitario: 80.00, valorTotal: 320.00 }
-        ],
-        temNotaFiscal: false
-      },
-      {
-        id: 3,
-        numeroVenda: 'VND-003',
-        data: new Date('2024-01-14'),
-        valorTotal: 89.90,
-        formaPagamento: 'PIX',
-        produtos: [
-          { nome: 'Produto D', quantidade: 1, valorUnitario: 89.90, valorTotal: 89.90 }
-        ],
-        temNotaFiscal: false
-      }
-    ];
-
-    this.vendas.set(vendasMock);
+    this.notasFiscaisService.buscarVendasDisponiveisAPI().subscribe(dtos => {
+      const vendas: VendaParaNF[] = dtos.map(dto =>
+        this.notasFiscaisService.converterVendaParaNF(dto)
+      );
+      this.vendas.set(vendas);
+    });
   }
 
   selecionarVenda(venda: VendaParaNF) {
@@ -144,11 +109,11 @@ export class NotaFiscalFormComponent implements OnInit {
     this.clienteCEP = '';
     this.observacoes = '';
 
-    // Define tipo padrão baseado na venda
-    if (venda.clienteCpfCnpj && venda.clienteCpfCnpj.length > 14) {
-      this.tipoNota = 'nfe'; // CNPJ = NF-e
+    // Define tipo padrão baseado no documento do cliente
+    if (venda.clienteCpfCnpj && venda.clienteCpfCnpj.replace(/\D/g, '').length > 11) {
+      this.tipoNota = 'nfe'; // CNPJ (14 dígitos) = NF-e
     } else {
-      this.tipoNota = 'nfce'; // CPF ou sem doc = NFC-e
+      this.tipoNota = 'nfce'; // CPF ou anônimo = NFC-e
     }
   }
 
@@ -157,9 +122,9 @@ export class NotaFiscalFormComponent implements OnInit {
   }
 
   emitirNota() {
-    if (!this.vendaSelecionada) return;
+    if (!this.vendaSelecionada || this.isEmitindo) return;
 
-    // Validação básica
+    // Validação básica para NF-e
     if (this.tipoNota === 'nfe' && !this.clienteNome) {
       this.messageService.add({
         severity: 'error',
@@ -178,60 +143,38 @@ export class NotaFiscalFormComponent implements OnInit {
       return;
     }
 
-    try {
-      // Prepara dados para emissão
-      const dadosEmissao = {
-        vendaId: this.vendaSelecionada.id,
-        tipo: this.tipoNota,
-        clienteNome: this.clienteNome,
-        clienteCpfCnpj: this.clienteCpfCnpj,
-        clienteEmail: this.clienteEmail,
-        clienteTelefone: this.clienteTelefone,
-        clienteEndereco: this.clienteEndereco,
-        clienteCidade: this.clienteCidade,
-        clienteUF: this.clienteUF,
-        clienteCEP: this.clienteCEP,
-        produtos: this.vendaSelecionada.produtos.map(p => ({
-          codigo: '001', // Viria do produto real
-          descricao: p.nome,
-          ncm: '12345678', // Viria do produto real
-          cfop: '5102', // Viria da configuração
-          unidade: 'UN',
-          quantidade: p.quantidade,
-          valorUnitario: p.valorUnitario,
-          valorTotal: p.valorTotal
-        })),
-        valorTotal: this.vendaSelecionada.valorTotal,
-        observacoes: this.observacoes
-      };
+    this.isEmitindo = true;
 
-      // Simula emissão (em produção seria chamada ao backend)
-      this.messageService.add({
-        severity: 'info',
-        summary: 'Processando',
-        detail: 'Enviando nota fiscal para autorização...'
-      });
+    this.messageService.add({
+      severity: 'info',
+      summary: 'Processando',
+      detail: 'Enviando nota fiscal para autorização...'
+    });
 
-      // Simula delay de processamento
-      setTimeout(() => {
+    this.notasFiscaisService.emitirAPI({
+      vendaId: this.vendaSelecionada.id,
+      tipo: this.tipoNota,
+      clienteId: this.vendaSelecionada.clienteId,
+      observacoes: this.observacoes || undefined
+    }).subscribe({
+      next: () => {
+        this.isEmitindo = false;
         this.messageService.add({
           severity: 'success',
           summary: 'Sucesso',
           detail: 'Nota fiscal emitida e autorizada com sucesso!'
         });
-
-        setTimeout(() => {
-          this.router.navigate(['/notas-fiscais']);
-        }, 1500);
-      }, 2000);
-
-    } catch (error: any) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Erro',
-        detail: error.message || 'Erro ao emitir nota fiscal'
-      });
-    }
+        setTimeout(() => this.router.navigate(['/notas-fiscais']), 1500);
+      },
+      error: (err) => {
+        this.isEmitindo = false;
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro',
+          detail: err.error?.message || err.message || 'Erro ao emitir nota fiscal'
+        });
+      }
+    });
   }
 
   formatDate(date: Date): string {

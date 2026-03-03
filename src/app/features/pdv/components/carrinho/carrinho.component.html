@@ -98,25 +98,16 @@
       (onClick)="onFinalizeSale()"
     />
 
-    <!-- Botões de Forma de Pagamento -->
-    <div class="grid grid-cols-2 gap-3 mb-3">
+    <!-- Botão de Pagamento (abre diálogo com seleção do método) -->
+    <div class="mb-3">
       <p-button
-        label="💵 Dinheiro"
+        label="💳 Escolher Forma de Pagamento"
         severity="secondary"
         outlined
         size="small"
-        class="payment-btn"
+        styleClass="w-full"
         [disabled]="items.length === 0"
-        (onClick)="onPaymentSelect('dinheiro')"
-      />
-      <p-button
-        label="💳 Cartão"
-        severity="secondary"
-        outlined
-        size="small"
-        class="payment-btn"
-        [disabled]="items.length === 0"
-        (onClick)="onPaymentSelect('cartao')"
+        (onClick)="onFinalizeSale()"
       />
     </div>
 

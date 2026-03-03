@@ -82,19 +82,22 @@ export class NotasFiscaisListComponent implements OnInit {
   }
 
   carregarNotasFiscais() {
-    this.notasFiscais.set(this.notasFiscaisService.getNotasFiscais());
+    this.notasFiscaisService.listarTodasAPI().subscribe(notas => {
+      this.notasFiscais.set(notas);
+    });
   }
 
   aplicarFiltros() {
-    const notas = this.notasFiscaisService.filtrarNotasFiscais({
+    const filtros = {
       dataInicio: this.dataInicio || undefined,
       dataFim: this.dataFim || undefined,
       tipo: this.tipoFiltro || undefined,
       status: this.statusFiltro || undefined,
-      clienteNome: this.clienteFiltro || undefined,
       numero: this.numeroFiltro || undefined
+    };
+    this.notasFiscaisService.consultarAPI(filtros).subscribe(notas => {
+      this.notasFiscais.set(notas);
     });
-    this.notasFiscais.set(notas);
   }
 
   limparFiltros() {
@@ -140,29 +143,29 @@ export class NotasFiscaisListComponent implements OnInit {
       return;
     }
 
-    try {
-      this.notasFiscaisService.cancelarNotaFiscal(
-        this.notaParaCancelar.id,
-        this.motivoCancelamento
-      );
+    const id = this.notaParaCancelar.id;
+    const motivo = this.motivoCancelamento;
 
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Sucesso',
-        detail: 'Nota fiscal cancelada com sucesso'
-      });
-
-      this.showCancelamentoDialog = false;
-      this.notaParaCancelar = null;
-      this.motivoCancelamento = '';
-      this.carregarNotasFiscais();
-    } catch (error: any) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Erro',
-        detail: error.message
-      });
-    }
+    this.notasFiscaisService.cancelarAPI(id, motivo).subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Sucesso',
+          detail: 'Nota fiscal cancelada com sucesso'
+        });
+        this.showCancelamentoDialog = false;
+        this.notaParaCancelar = null;
+        this.motivoCancelamento = '';
+        this.carregarNotasFiscais();
+      },
+      error: (err) => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro',
+          detail: err.error?.message || err.message || 'Erro ao cancelar nota fiscal'
+        });
+      }
+    });
   }
 
   downloadXML(nota: NotaFiscal) {

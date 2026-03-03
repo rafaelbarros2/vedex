@@ -46,7 +46,10 @@ export class EstoqueListComponent implements OnInit {
   filtros = signal<EstoqueFiltros>({});
   produtosFiltrados = computed(() => this.estoqueService.listarProdutos(this.filtros()));
 
-  categorias = signal<any[]>([]);
+  categorias = computed(() => {
+    const cats = this.estoqueService.getCategorias();
+    return [{ label: 'Todas', value: null }, ...cats.map(c => ({ label: c, value: c }))];
+  });
 
   searchTerm = '';
   selectedCategoria: string | null = null;
@@ -73,15 +76,7 @@ export class EstoqueListComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.carregarCategorias();
-  }
-
-  carregarCategorias() {
-    const cats = this.estoqueService.getCategorias();
-    this.categorias.set([
-      { label: 'Todas', value: null },
-      ...cats.map(c => ({ label: c, value: c }))
-    ]);
+    // Produtos carregados automaticamente no EstoqueService constructor
   }
 
   aplicarFiltros() {
@@ -136,107 +131,73 @@ export class EstoqueListComponent implements OnInit {
   salvarMovimentacao() {
     if (!this.produtoSelecionado) return;
 
-    try {
-      if (this.tipoMovimentacao === 'entrada') {
-        if (this.quantidade <= 0) {
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Erro',
-            detail: 'Quantidade deve ser maior que zero'
-          });
-          return;
-        }
-
-        const entrada: EntradaEstoque = {
-          produtoId: this.produtoSelecionado.id,
-          quantidade: this.quantidade,
-          precoCusto: this.precoCusto,
-          fornecedor: this.fornecedor,
-          observacao: this.observacao
-        };
-
-        this.estoqueService.registrarEntrada(entrada, 'João Silva');
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Sucesso',
-          detail: `Entrada de ${this.quantidade} unidades registrada`
-        });
-
-      } else if (this.tipoMovimentacao === 'saida') {
-        if (this.quantidade <= 0) {
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Erro',
-            detail: 'Quantidade deve ser maior que zero'
-          });
-          return;
-        }
-
-        if (!this.motivo) {
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Erro',
-            detail: 'Motivo é obrigatório para saída'
-          });
-          return;
-        }
-
-        const saida: SaidaEstoque = {
-          produtoId: this.produtoSelecionado.id,
-          quantidade: this.quantidade,
-          motivo: this.motivo,
-          observacao: this.observacao
-        };
-
-        this.estoqueService.registrarSaida(saida, 'João Silva');
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Sucesso',
-          detail: `Saída de ${this.quantidade} unidades registrada`
-        });
-
-      } else if (this.tipoMovimentacao === 'ajuste') {
-        if (this.quantidadeNova < 0) {
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Erro',
-            detail: 'Quantidade não pode ser negativa'
-          });
-          return;
-        }
-
-        if (!this.motivo) {
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Erro',
-            detail: 'Motivo é obrigatório para ajuste'
-          });
-          return;
-        }
-
-        const ajuste: AjusteEstoque = {
-          produtoId: this.produtoSelecionado.id,
-          quantidadeNova: this.quantidadeNova,
-          motivo: this.motivo,
-          observacao: this.observacao
-        };
-
-        this.estoqueService.registrarAjuste(ajuste, 'João Silva');
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Sucesso',
-          detail: 'Ajuste de estoque registrado'
-        });
+    if (this.tipoMovimentacao === 'entrada') {
+      if (this.quantidade <= 0) {
+        this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Quantidade deve ser maior que zero' });
+        return;
       }
+      const entrada: EntradaEstoque = {
+        produtoId: this.produtoSelecionado.id,
+        quantidade: this.quantidade,
+        precoCusto: this.precoCusto,
+        fornecedor: this.fornecedor,
+        observacao: this.observacao
+      };
+      this.estoqueService.registrarEntradaAPI(entrada).subscribe({
+        next: () => {
+          this.messageService.add({ severity: 'success', summary: 'Sucesso', detail: `Entrada de ${this.quantidade} unidades registrada` });
+          this.showMovimentacaoDialog = false;
+          this.produtoSelecionado = null;
+        },
+        error: (e: any) => this.messageService.add({ severity: 'error', summary: 'Erro', detail: e.error?.message || e.message || 'Erro ao registrar entrada' })
+      });
 
-      this.showMovimentacaoDialog = false;
-      this.produtoSelecionado = null;
+    } else if (this.tipoMovimentacao === 'saida') {
+      if (this.quantidade <= 0) {
+        this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Quantidade deve ser maior que zero' });
+        return;
+      }
+      if (!this.motivo) {
+        this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Motivo é obrigatório para saída' });
+        return;
+      }
+      const saida: SaidaEstoque = {
+        produtoId: this.produtoSelecionado.id,
+        quantidade: this.quantidade,
+        motivo: this.motivo,
+        observacao: this.observacao
+      };
+      this.estoqueService.registrarSaidaAPI(saida).subscribe({
+        next: () => {
+          this.messageService.add({ severity: 'success', summary: 'Sucesso', detail: `Saída de ${this.quantidade} unidades registrada` });
+          this.showMovimentacaoDialog = false;
+          this.produtoSelecionado = null;
+        },
+        error: (e: any) => this.messageService.add({ severity: 'error', summary: 'Erro', detail: e.error?.message || e.message || 'Erro ao registrar saída' })
+      });
 
-    } catch (error: any) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Erro',
-        detail: error.message || 'Erro ao processar movimentação'
+    } else if (this.tipoMovimentacao === 'ajuste') {
+      if (this.quantidadeNova < 0) {
+        this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Quantidade não pode ser negativa' });
+        return;
+      }
+      if (!this.motivo) {
+        this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Motivo é obrigatório para ajuste' });
+        return;
+      }
+      const ajuste: AjusteEstoque = {
+        produtoId: this.produtoSelecionado.id,
+        quantidadeNova: this.quantidadeNova,
+        motivo: this.motivo,
+        observacao: this.observacao
+      };
+      this.estoqueService.registrarAjusteAPI(ajuste).subscribe({
+        next: () => {
+          this.messageService.add({ severity: 'success', summary: 'Sucesso', detail: 'Ajuste de estoque registrado' });
+          this.showMovimentacaoDialog = false;
+          this.produtoSelecionado = null;
+        },
+        error: (e: any) => this.messageService.add({ severity: 'error', summary: 'Erro', detail: e.error?.message || e.message || 'Erro ao registrar ajuste' })
       });
     }
   }

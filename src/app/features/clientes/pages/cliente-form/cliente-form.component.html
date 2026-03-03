@@ -1,0 +1,212 @@
+<p-toast />
+
+<div class="p-4 max-w-4xl mx-auto">
+  <!-- Cabeçalho -->
+  <div class="flex items-center gap-3 mb-6">
+    <p-button
+      icon="pi pi-arrow-left"
+      [rounded]="true"
+      [text]="true"
+      severity="secondary"
+      (onClick)="cancelar()"
+      pTooltip="Voltar"
+    />
+    <div>
+      <h1 class="text-2xl font-bold text-surface-900 dark:text-surface-0">
+        {{ isEditMode ? 'Editar Cliente' : 'Novo Cliente' }}
+      </h1>
+      <p class="text-surface-500 text-sm mt-0.5">
+        {{ isEditMode ? 'Atualize os dados do cliente' : 'Preencha os dados para cadastrar um novo cliente' }}
+      </p>
+    </div>
+  </div>
+
+  @if (carregando) {
+    <div class="flex justify-center items-center py-16">
+      <i class="pi pi-spin pi-spinner text-4xl text-primary"></i>
+    </div>
+  } @else {
+    <!-- Dados básicos -->
+    <p-card header="Dados Básicos" styleClass="mb-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        <div class="md:col-span-2 flex flex-col gap-1">
+          <label class="text-sm font-medium text-surface-700 dark:text-surface-300">
+            Nome <span class="text-red-500">*</span>
+          </label>
+          <p-inputtext
+            [(ngModel)]="nome"
+            placeholder="Nome completo ou razão social"
+            class="w-full"
+            [maxlength]="200"
+          />
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-medium text-surface-700 dark:text-surface-300">
+            CPF / CNPJ <span class="text-red-500">*</span>
+          </label>
+          @if (isEditMode) {
+            <p-inputtext
+              [ngModel]="cpfCnpj"
+              [disabled]="true"
+              class="w-full"
+            />
+            <span class="text-xs text-surface-400">CPF/CNPJ não pode ser alterado</span>
+          } @else {
+            <p-inputtext
+              [(ngModel)]="cpfCnpj"
+              placeholder="000.000.000-00 ou 00.000.000/0000-00"
+              class="w-full"
+              [maxlength]="18"
+            />
+          }
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-medium text-surface-700 dark:text-surface-300">Email</label>
+          <p-inputtext
+            [(ngModel)]="email"
+            placeholder="email@exemplo.com"
+            type="email"
+            class="w-full"
+            [maxlength]="100"
+          />
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-medium text-surface-700 dark:text-surface-300">Telefone</label>
+          <p-inputmask
+            [(ngModel)]="telefone"
+            mask="(99) 9999-9999"
+            placeholder="(00) 0000-0000"
+            class="w-full"
+          />
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-medium text-surface-700 dark:text-surface-300">Celular</label>
+          <p-inputmask
+            [(ngModel)]="celular"
+            mask="(99) 99999-9999"
+            placeholder="(00) 00000-0000"
+            class="w-full"
+          />
+        </div>
+      </div>
+    </p-card>
+
+    <!-- Endereço -->
+    <p-card header="Endereço" styleClass="mb-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-medium text-surface-700 dark:text-surface-300">CEP</label>
+          <p-inputmask
+            [(ngModel)]="cep"
+            mask="99999-999"
+            placeholder="00000-000"
+            class="w-full"
+          />
+        </div>
+
+        <div class="md:col-span-1"></div>
+
+        <div class="md:col-span-2 flex flex-col gap-1">
+          <label class="text-sm font-medium text-surface-700 dark:text-surface-300">Logradouro</label>
+          <p-inputtext
+            [(ngModel)]="endereco"
+            placeholder="Rua, Avenida, etc."
+            class="w-full"
+            [maxlength]="255"
+          />
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-medium text-surface-700 dark:text-surface-300">Número</label>
+          <p-inputtext
+            [(ngModel)]="numero"
+            placeholder="Nº"
+            class="w-full"
+            [maxlength]="20"
+          />
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-medium text-surface-700 dark:text-surface-300">Complemento</label>
+          <p-inputtext
+            [(ngModel)]="complemento"
+            placeholder="Apto, Sala, etc."
+            class="w-full"
+            [maxlength]="100"
+          />
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-medium text-surface-700 dark:text-surface-300">Bairro</label>
+          <p-inputtext
+            [(ngModel)]="bairro"
+            placeholder="Bairro"
+            class="w-full"
+            [maxlength]="100"
+          />
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-medium text-surface-700 dark:text-surface-300">Cidade</label>
+          <p-inputtext
+            [(ngModel)]="cidade"
+            placeholder="Cidade"
+            class="w-full"
+            [maxlength]="100"
+          />
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-medium text-surface-700 dark:text-surface-300">UF</label>
+          <p-inputtext
+            [(ngModel)]="uf"
+            placeholder="SP"
+            class="w-full"
+            [maxlength]="2"
+            style="text-transform: uppercase"
+          />
+        </div>
+      </div>
+    </p-card>
+
+    <!-- Informações extras (somente leitura, edit mode) -->
+    @if (isEditMode) {
+      <p-card header="Informações" styleClass="mb-4">
+        <div class="grid grid-cols-2 gap-4">
+          <div class="flex flex-col gap-1">
+            <label class="text-sm text-surface-500">Data de Cadastro</label>
+            <span class="font-medium">{{ formatDate(dataCadastro()) }}</span>
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="text-sm text-surface-500">Total de Compras</label>
+            <span class="font-medium">{{ totalCompras() }}</span>
+          </div>
+        </div>
+      </p-card>
+    }
+
+    <!-- Botões -->
+    <div class="flex justify-end gap-3">
+      <p-button
+        label="Cancelar"
+        icon="pi pi-times"
+        severity="secondary"
+        [outlined]="true"
+        (onClick)="cancelar()"
+      />
+      <p-button
+        [label]="isEditMode ? 'Salvar Alterações' : 'Cadastrar Cliente'"
+        icon="pi pi-check"
+        [loading]="salvando"
+        [disabled]="!formularioValido()"
+        (onClick)="salvar()"
+      />
+    </div>
+  }
+</div>

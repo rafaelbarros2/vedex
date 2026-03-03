@@ -7,7 +7,7 @@
   [draggable]="false"
   [resizable]="false"
   styleClass="payment-dialog"
-  [style]="{ width: '500px' }"
+  [style]="{ width: '520px' }"
 >
   <div class="payment-content">
     <!-- Resumo da Venda -->
@@ -35,37 +35,83 @@
     <div class="mb-6">
       <h4 class="text-md font-semibold text-gray-800 mb-4">Forma de Pagamento</h4>
 
-      <div class="space-y-3">
-        <div class="flex items-center">
+      <div class="grid grid-cols-2 gap-3">
+        <!-- Dinheiro -->
+        <label
+          for="pay_dinheiro"
+          class="flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all"
+          [class.border-green-500]="paymentType === 'dinheiro'"
+          [class.bg-green-50]="paymentType === 'dinheiro'"
+          [class.border-gray-200]="paymentType !== 'dinheiro'"
+        >
           <p-radioButton
             name="paymentType"
             value="dinheiro"
             [(ngModel)]="paymentType"
-            inputId="dinheiro"
+            inputId="pay_dinheiro"
           />
-          <label for="dinheiro" class="ml-3 flex items-center cursor-pointer">
-            <span class="text-2xl mr-2">💵</span>
-            <span class="font-medium">Dinheiro</span>
-          </label>
-        </div>
+          <span class="text-2xl">💵</span>
+          <span class="font-medium text-sm">Dinheiro</span>
+        </label>
 
-        <div class="flex items-center">
+        <!-- PIX -->
+        <label
+          for="pay_pix"
+          class="flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all"
+          [class.border-teal-500]="paymentType === 'pix'"
+          [class.bg-teal-50]="paymentType === 'pix'"
+          [class.border-gray-200]="paymentType !== 'pix'"
+        >
           <p-radioButton
             name="paymentType"
-            value="cartao"
+            value="pix"
             [(ngModel)]="paymentType"
-            inputId="cartao"
+            inputId="pay_pix"
           />
-          <label for="cartao" class="ml-3 flex items-center cursor-pointer">
-            <span class="text-2xl mr-2">💳</span>
-            <span class="font-medium">Cartão / PIX</span>
-          </label>
-        </div>
+          <span class="text-2xl">📱</span>
+          <span class="font-medium text-sm">PIX</span>
+        </label>
+
+        <!-- Cartão Débito -->
+        <label
+          for="pay_debito"
+          class="flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all"
+          [class.border-blue-500]="paymentType === 'cartao_debito'"
+          [class.bg-blue-50]="paymentType === 'cartao_debito'"
+          [class.border-gray-200]="paymentType !== 'cartao_debito'"
+        >
+          <p-radioButton
+            name="paymentType"
+            value="cartao_debito"
+            [(ngModel)]="paymentType"
+            inputId="pay_debito"
+          />
+          <span class="text-2xl">💳</span>
+          <span class="font-medium text-sm">Cartão Débito</span>
+        </label>
+
+        <!-- Cartão Crédito -->
+        <label
+          for="pay_credito"
+          class="flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all"
+          [class.border-purple-500]="paymentType === 'cartao_credito'"
+          [class.bg-purple-50]="paymentType === 'cartao_credito'"
+          [class.border-gray-200]="paymentType !== 'cartao_credito'"
+        >
+          <p-radioButton
+            name="paymentType"
+            value="cartao_credito"
+            [(ngModel)]="paymentType"
+            inputId="pay_credito"
+          />
+          <span class="text-2xl">💳</span>
+          <span class="font-medium text-sm">Cartão Crédito</span>
+        </label>
       </div>
     </div>
 
     <!-- Valor Recebido (apenas para dinheiro) -->
-    @if (paymentType === 'dinheiro') {
+    @if (isDinheiro) {
       <div class="mb-6">
         <label class="block text-sm font-medium text-gray-700 mb-2">Valor Recebido</label>
         <p-inputNumber
@@ -96,14 +142,30 @@
       </div>
     }
 
-    @if (paymentType === 'cartao') {
-      <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+    <!-- Confirmação de pagamento eletrônico -->
+    @if (!isDinheiro) {
+      <div class="mb-6 p-4 rounded-lg border"
+        [class.bg-teal-50]="paymentType === 'pix'"
+        [class.border-teal-200]="paymentType === 'pix'"
+        [class.bg-blue-50]="paymentType === 'cartao_debito'"
+        [class.border-blue-200]="paymentType === 'cartao_debito'"
+        [class.bg-purple-50]="paymentType === 'cartao_credito'"
+        [class.border-purple-200]="paymentType === 'cartao_credito'"
+      >
         <div class="flex items-center mb-2">
-          <span class="text-blue-600 text-xl mr-2">ℹ️</span>
-          <span class="text-blue-800 font-medium">Pagamento Eletrônico</span>
+          <span class="text-xl mr-2">
+            @if (paymentType === 'pix') { 📱 }
+            @else { 💳 }
+          </span>
+          <span class="font-medium">
+            @if (paymentType === 'pix') { Pagamento via PIX }
+            @else if (paymentType === 'cartao_debito') { Cartão de Débito }
+            @else { Cartão de Crédito }
+          </span>
         </div>
-        <p class="text-sm text-blue-700">
-          Aguarde a confirmação do pagamento (Cartão/PIX/Débito/Crédito) antes de finalizar a venda.
+        <p class="text-sm">
+          Valor a cobrar: <strong>R$ {{ formatPrice(total) }}</strong>.
+          Aguarde a confirmação do pagamento antes de finalizar.
         </p>
       </div>
     }

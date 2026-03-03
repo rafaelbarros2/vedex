@@ -1,43 +1,45 @@
 import { KeycloakService } from 'keycloak-angular';
 import { keycloakConfig, keycloakInitOptions } from '../config/keycloak.config';
 
+const KEYCLOAK_INIT_TIMEOUT_MS = 5000;
+
 /**
- * Factory function para inicializar o Keycloak
+ * Factory function para inicializar o Keycloak.
  *
- * Esta função é executada ANTES da aplicação Angular iniciar
- * Garante que o usuário esteja autenticado antes de carregar a app
+ * - Se Keycloak responder normalmente, o usuário é autenticado via SSO.
+ * - Se Keycloak não estiver disponível (timeout de 5s), a app carrega no
+ *   modo não-autenticado e o authGuard redireciona para /login.
  */
 export function initializeKeycloak(keycloak: KeycloakService): () => Promise<boolean> {
-  return () =>
-    keycloak.init({
-      config: keycloakConfig,
-      initOptions: keycloakInitOptions,
+  return () => {
+    const keycloakInit = keycloak
+      .init({
+        config: keycloakConfig,
+        initOptions: keycloakInitOptions,
 
-      // Habilita modo bearer-only para APIs
-      bearerExcludedUrls: ['/assets', '/api/public'],
+        // Não injeta token em assets e endpoints públicos
+        bearerExcludedUrls: ['/assets', '/api/public'],
 
-      // Callback de sucesso
-      shouldAddToken: (request) => {
-        const { method, url } = request;
+        shouldAddToken: (request) => {
+          const { url } = request;
+          if (url.includes('/assets')) return false;
+          if (url.includes('/api/public') || url.includes('/api/auth/config')) return false;
+          return url.includes('/api/');
+        },
 
-        // Não adiciona token para assets
-        if (url.includes('/assets')) {
-          return false;
+        // Atualiza o token quando ele está próximo de expirar (< 70 segundos)
+        shouldUpdateToken: (_request) => {
+          return keycloak.isTokenExpired(70);
         }
+      });
 
-        // Não adiciona token para endpoints públicos
-        if (url.includes('/api/public') || url.includes('/api/auth/config')) {
-          return false;
-        }
+    const timeout = new Promise<boolean>((_resolve, reject) =>
+      setTimeout(() => reject(new Error(`Keycloak não respondeu em ${KEYCLOAK_INIT_TIMEOUT_MS / 1000}s`)), KEYCLOAK_INIT_TIMEOUT_MS)
+    );
 
-        // Adiciona token para todas as outras requisições à API
-        return url.includes('/api/');
-      },
-
-      // Callback quando token atualiza
-      shouldUpdateToken: (request) => {
-        // Atualiza token se faltarem menos de 70 segundos para expirar
-        return !keycloak.isTokenExpired(70);
-      }
+    return Promise.race([keycloakInit, timeout]).catch((error) => {
+      console.warn('[Auth] Keycloak indisponível — continuando sem autenticação:', error?.message ?? error);
+      return false;
     });
+  };
 }

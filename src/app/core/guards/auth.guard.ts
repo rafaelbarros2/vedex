@@ -3,14 +3,19 @@ import { Router, ActivatedRouteSnapshot, RouterStateSnapshot, UrlTree } from '@a
 import { KeycloakService } from 'keycloak-angular';
 
 /**
- * Auth Guard para proteger rotas que requerem autenticação
+ * Guard que protege rotas que requerem autenticação.
+ *
+ * Fluxo:
+ * 1. Verifica se o usuário está logado no Keycloak
+ * 2. Se não estiver, tenta redirecionar para o login do Keycloak
+ * 3. Se o Keycloak estiver indisponível, redireciona para /login (tela local)
+ * 4. Verifica roles necessárias (se definidas em route.data['roles'])
  *
  * Uso:
- * {
- *   path: 'dashboard',
- *   component: DashboardComponent,
- *   canActivate: [authGuard]
- * }
+ * { path: 'dashboard', ..., canActivate: [authGuard] }
+ *
+ * Com roles:
+ * { path: 'admin', ..., canActivate: [authGuard], data: { roles: ['ADMIN'] } }
  */
 export const authGuard = async (
   route: ActivatedRouteSnapshot,
@@ -19,79 +24,37 @@ export const authGuard = async (
   const keycloakService = inject(KeycloakService);
   const router = inject(Router);
 
-  // Verifica se o usuário está autenticado
-  const isLoggedIn = await keycloakService.isLoggedIn();
+  try {
+    const isLoggedIn = await keycloakService.isLoggedIn();
 
-  if (!isLoggedIn) {
-    // Redireciona para login do Keycloak
-    await keycloakService.login({
-      redirectUri: window.location.origin + state.url
-    });
-    return false;
-  }
-
-  // Verifica roles necessárias (se especificadas na rota)
-  const requiredRoles = route.data['roles'] as Array<string>;
-
-  if (requiredRoles && requiredRoles.length > 0) {
-    const hasRequiredRole = requiredRoles.some(role =>
-      keycloakService.isUserInRole(role)
-    );
-
-    if (!hasRequiredRole) {
-      // Usuário autenticado mas sem permissão
-      console.error('Acesso negado: usuário não possui as roles necessárias', requiredRoles);
-      return router.createUrlTree(['/403']); // Página de acesso negado
+    if (!isLoggedIn) {
+      // Redireciona para a tela de login local, preservando a URL de destino
+      return router.createUrlTree(['/login'], {
+        queryParams: { returnUrl: state.url }
+      });
     }
-  }
 
-  return true;
+    // Verifica roles necessárias (se especificadas na rota)
+    const requiredRoles = route.data['roles'] as string[] | undefined;
+
+    if (requiredRoles && requiredRoles.length > 0) {
+      const hasRequiredRole = requiredRoles.some(role => keycloakService.isUserInRole(role));
+
+      if (!hasRequiredRole) {
+        console.warn('[AuthGuard] Acesso negado — roles necessárias:', requiredRoles);
+        return router.createUrlTree(['/403']);
+      }
+    }
+
+    return true;
+  } catch (error) {
+    // Keycloak indisponível — redireciona para a tela de login local
+    console.warn('[AuthGuard] Keycloak indisponível, redirecionando para /login:', error);
+    return router.createUrlTree(['/login']);
+  }
 };
 
 /**
- * Guard para verificar roles específicas
- *
- * Uso:
- * {
- *   path: 'admin',
- *   component: AdminComponent,
- *   canActivate: [roleGuard],
- *   data: { roles: ['ADMIN'] }
- * }
+ * Guard para verificar roles específicas (alias semântico do authGuard).
  */
-export const roleGuard = async (
-  route: ActivatedRouteSnapshot,
-  state: RouterStateSnapshot
-): Promise<boolean | UrlTree> => {
-  const keycloakService = inject(KeycloakService);
-  const router = inject(Router);
-
-  const isLoggedIn = await keycloakService.isLoggedIn();
-
-  if (!isLoggedIn) {
-    await keycloakService.login({
-      redirectUri: window.location.origin + state.url
-    });
-    return false;
-  }
-
-  const requiredRoles = route.data['roles'] as Array<string>;
-
-  if (!requiredRoles || requiredRoles.length === 0) {
-    return true;
-  }
-
-  const hasRequiredRole = requiredRoles.some(role =>
-    keycloakService.isUserInRole(role)
-  );
-
-  if (!hasRequiredRole) {
-    console.error('Acesso negado:', {
-      requiredRoles,
-      userRoles: keycloakService.getUserRoles()
-    });
-    return router.createUrlTree(['/403']);
-  }
-
-  return true;
-};
+export const roleGuard = authGuard;

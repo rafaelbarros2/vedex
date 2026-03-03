@@ -28,7 +28,7 @@ import { CaixaService } from '../../services/caixa.service';
 })
 export class AberturaCaixaComponent {
   valorAbertura: number = 0;
-  operador: string = 'João Silva';
+  observacoes: string = '';
 
   constructor(
     private caixaService: CaixaService,
@@ -46,7 +46,7 @@ export class AberturaCaixaComponent {
       return;
     }
 
-    this.caixaService.abrirCaixa(this.valorAbertura, this.operador)
+    this.caixaService.abrirCaixa(this.valorAbertura, this.observacoes || undefined)
       .subscribe({
         next: () => {
           this.messageService.add({
