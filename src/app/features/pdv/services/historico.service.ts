@@ -8,10 +8,6 @@ import { VendaHistorico, VendaHistoricoItem } from '../../../shared/models/venda
 export class HistoricoService {
   private vendas = signal<VendaHistorico[]>([]);
 
-  constructor() {
-    this.carregarDadosIniciais();
-  }
-
   obterVendas(): Observable<VendaHistorico[]> {
     return of(this.vendas());
   }

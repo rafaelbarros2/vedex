@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Output, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
-import { CaixaService } from '../../services/caixa.service';
+import { CaixaService } from '../../../caixa/services/caixa.service';
 import { AuthService } from '../../../../core/auth/auth.service';
 
 @Component({
