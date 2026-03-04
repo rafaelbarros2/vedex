@@ -29,17 +29,20 @@
 
   <!-- Right Section -->
   <div class="flex items-center gap-3">
-    <!-- Store Info -->
-    <div class="px-4 border-l border-r border-gray-200 hidden lg:block">
-      <div class="text-xs text-gray-500 uppercase tracking-wider">Loja</div>
-      <div class="text-sm font-semibold text-gray-800">Centro - Caixa 01</div>
-    </div>
-
     <!-- Cash Info -->
-    <div class="px-4 border-r border-gray-200 hidden lg:block">
-      <div class="text-xs text-gray-500 uppercase tracking-wider">Caixa</div>
-      <div class="text-sm font-semibold text-gray-800">R$ 1.250,00</div>
-    </div>
+    @if (caixaAberto()) {
+      <div class="px-4 border-l border-r border-gray-200 hidden lg:block">
+        <div class="text-xs text-gray-500 uppercase tracking-wider">Caixa</div>
+        <div class="text-sm font-semibold text-green-600">
+          {{ saldoCaixa() !== null ? (saldoCaixa()! | currency:'BRL':'symbol':'1.2-2':'pt-BR') : 'Carregando...' }}
+        </div>
+      </div>
+    } @else {
+      <div class="px-4 border-l border-r border-gray-200 hidden lg:block">
+        <div class="text-xs text-gray-500 uppercase tracking-wider">Caixa</div>
+        <div class="text-sm font-semibold text-red-500">Fechado</div>
+      </div>
+    }
 
     <!-- Notifications -->
     <button
@@ -47,11 +50,7 @@
       type="button"
       icon="pi pi-bell"
       class="p-button-text p-button-rounded relative"
-      badge="3"
-      badgeSeverity="danger"
-    >
-      <span class="absolute top-1.5 right-1.5 bg-red-500 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">3</span>
-    </button>
+    ></button>
 
     <!-- Settings -->
     <button

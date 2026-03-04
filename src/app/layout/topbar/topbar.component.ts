@@ -1,4 +1,4 @@
-import { Component, output, inject, signal } from '@angular/core';
+import { Component, output, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
@@ -8,6 +8,7 @@ import { AvatarModule } from 'primeng/avatar';
 import { MenuModule } from 'primeng/menu';
 import { MenuItem } from 'primeng/api';
 import { AuthService } from '../../core/auth/auth.service';
+import { CaixaService } from '../../features/caixa/services/caixa.service';
 
 @Component({
   selector: 'app-topbar',
@@ -26,6 +27,7 @@ import { AuthService } from '../../core/auth/auth.service';
 })
 export class TopbarComponent {
   private authService = inject(AuthService);
+  private caixaService = inject(CaixaService);
 
   menuToggle = output<void>();
 
@@ -33,6 +35,13 @@ export class TopbarComponent {
 
   // Estado do usuário
   userInfo = this.authService.userInfo;
+
+  // Dados reais do caixa
+  caixaAberto = computed(() => this.caixaService.caixaAtual());
+  saldoCaixa = computed(() => {
+    const resumo = this.caixaService.resumoCaixaAtual();
+    return resumo ? resumo.saldoAtual : null;
+  });
 
   // Menu do usuário
   userMenuItems = signal<MenuItem[]>([
