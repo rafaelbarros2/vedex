@@ -1,138 +1,139 @@
-<!-- Main container with background and padding -->
-    <div class="bg-gray-50 h-screen overflow-y-auto p-4 sm:p-6 lg:p-8 font-sans">
-      <div class="max-w-7xl mx-auto bg-white rounded-2xl shadow-lg p-6 sm:p-8">
-        
-        <!-- Page Header -->
-        <header class="mb-8 border-b pb-4">
-          <h1 class="text-3xl font-bold text-gray-800">Histórico de Vendas</h1>
-          <p class="text-gray-500 mt-1">Visualize, filtre e gerencie o histórico de vendas.</p>
-        </header>
+<div class="bg-gray-50 h-screen overflow-y-auto p-4 sm:p-6 lg:p-8 font-sans">
+  <div class="max-w-7xl mx-auto bg-white rounded-2xl shadow-lg p-6 sm:p-8">
 
-        <!-- Filters Section -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6 items-end">
-          <!-- Start Date Filter -->
-          <div class="flex flex-col">
-            <label for="dataInicio" class="text-sm font-medium text-gray-600 mb-2">Data Início</label>
-            <input type="date" [(ngModel)]="dataInicio" id="dataInicio" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-          </div>
+    <!-- Header -->
+    <header class="mb-8 border-b pb-4">
+      <h1 class="text-3xl font-bold text-gray-800">Histórico de Vendas</h1>
+      <p class="text-gray-500 mt-1">Visualize e filtre o histórico de vendas realizadas.</p>
+    </header>
 
-          <!-- End Date Filter -->
-          <div class="flex flex-col">
-            <label for="dataFim" class="text-sm font-medium text-gray-600 mb-2">Data Fim</label>
-            <input type="date" [(ngModel)]="dataFim" id="dataFim" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-          </div>
+    <!-- Loading -->
+    @if (carregando()) {
+      <div class="flex justify-center items-center py-16 text-gray-500">
+        <span class="text-lg">Carregando vendas...</span>
+      </div>
+    } @else {
 
-          <!-- Search Input -->
-          <div class="flex flex-col lg:col-span-2">
-            <label for="search" class="text-sm font-medium text-gray-600 mb-2">Buscar por cliente ou nº venda</label>
-            <div class="relative">
-              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                  <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
-                </svg>
-              </div>
-              <input type="text" [(ngModel)]="termoBusca" placeholder="Digite para buscar..." class="w-full pl-10 pr-4  border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"/>
+      <!-- Filtros -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6 items-end">
+        <div class="flex flex-col">
+          <label class="text-sm font-medium text-gray-600 mb-2">Data Início</label>
+          <input type="date" [ngModel]="dataInicio()" (ngModelChange)="dataInicio.set($event)" class="w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500">
+        </div>
+        <div class="flex flex-col">
+          <label class="text-sm font-medium text-gray-600 mb-2">Data Fim</label>
+          <input type="date" [ngModel]="dataFim()" (ngModelChange)="dataFim.set($event)" class="w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500">
+        </div>
+        <div class="flex flex-col lg:col-span-2">
+          <label class="text-sm font-medium text-gray-600 mb-2">Buscar por cliente ou nº venda</label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+              </svg>
             </div>
+            <input type="text" [ngModel]="termoBusca()" (ngModelChange)="termoBusca.set($event)" placeholder="Digite para buscar..." class="w-full pl-10 pr-4 border border-gray-300 rounded-md shadow-sm py-2 focus:ring-indigo-500 focus:border-indigo-500"/>
           </div>
         </div>
+      </div>
 
-        <!-- Action Buttons -->
-        <div class="flex justify-end mb-6">
-          <button (click)="exportarRelatorio()" class="inline-flex items-center px-4  border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-            <svg class="w-5 h-5 mr-2 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
-            Exportar Relatório
-          </button>
-        </div>
-
-        <!-- Sales Table -->
-        <div class="overflow-x-auto rounded-lg border">
-          <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-              <tr>
-                <th scope="col" (click)="setSort('numeroVenda')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer">
-                  <div class="flex items-center">Nº Venda {{ getSortIcon('numeroVenda') }}</div>
-                </th>
-                <th scope="col" (click)="setSort('data')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer">
-                  <div class="flex items-center">Data {{ getSortIcon('data') }}</div>
-                </th>
-                <th scope="col" (click)="setSort('cliente')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer">
-                  <div class="flex items-center">Cliente {{ getSortIcon('cliente') }}</div>
-                </th>
-                <th scope="col" (click)="setSort('valorTotal')" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer">
-                  <div class="flex items-center justify-end">Valor Total {{ getSortIcon('valorTotal') }}</div>
-                </th>
-                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Forma Pag.</th>
-                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
-              </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-              @if(paginatedVendas().length > 0) {
-                @for(venda of paginatedVendas(); track venda.numeroVenda) {
-                  <tr class="hover:bg-gray-50">
-                    <td class="px-6 py-4 whitespace-nowrap"><span class="font-medium text-blue-600">#{{ venda.numeroVenda }}</span></td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ formatDate(venda.data) }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ venda.cliente }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 font-semibold text-right">R$ {{ formatPrice(venda.valorTotal) }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-center text-2xl" [title]="venda.formaPagamento">{{ formaToIcon(venda.formaPagamento) }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                      <button (click)="reimprimir(venda)" class="text-indigo-600 hover:text-indigo-900 mx-2" title="Reimprimir">
-                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5 2a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V4a2 2 0 00-2-2H5zm0 2h10v7H5V4zm0 9h10v1H5v-1z" clip-rule="evenodd" /><path d="M5 1a1 1 0 00-1 1v1h12V2a1 1 0 00-1-1H5z" /></svg>
-                      </button>
-                      <button (click)="cancelarVenda(venda)" class="text-red-600 hover:text-red-900 mx-2" title="Cancelar Venda">
-                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" /></svg>
-                      </button>
-                    </td>
-                  </tr>
-                }
-              } @else {
-                <tr>
-                  <td colspan="6" class="text-center p-8">
-                      <div class="flex flex-col items-center text-gray-500">
-                        <svg class="w-12 h-12" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>
-                        <p class="mt-4 text-lg">Nenhuma venda encontrada</p>
-                        <p class="text-sm">Tente ajustar seus filtros de busca.</p>
-                      </div>
+      <!-- Tabela -->
+      <div class="overflow-x-auto rounded-lg border">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th (click)="setSort('numeroVenda')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer">
+                <div class="flex items-center">Nº Venda {{ getSortIcon('numeroVenda') }}</div>
+              </th>
+              <th (click)="setSort('dataVenda')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer">
+                <div class="flex items-center">Data {{ getSortIcon('dataVenda') }}</div>
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Operador</th>
+              <th (click)="setSort('total')" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer">
+                <div class="flex items-center justify-end">Total {{ getSortIcon('total') }}</div>
+              </th>
+              <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Pagamento</th>
+              <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            @if (paginatedVendas().length > 0) {
+              @for (venda of paginatedVendas(); track venda.id) {
+                <tr class="hover:bg-gray-50">
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="font-mono font-semibold text-blue-600">{{ venda.numeroVenda }}</span>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {{ formatDate(venda.dataVenda) }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {{ venda.cliente?.nome || 'Consumidor Final' }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {{ venda.usuario?.nome || '-' }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-700 text-right">
+                    {{ formatPrice(venda.total) }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-center text-2xl" [title]="getFormaPagamentoLabel(venda.formaPagamento)">
+                    {{ formaToIcon(venda.formaPagamento) }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-center">
+                    @if (venda.status === 'concluida') {
+                      <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Concluída</span>
+                    } @else if (venda.status === 'cancelada') {
+                      <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Cancelada</span>
+                    } @else {
+                      <span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">{{ venda.status }}</span>
+                    }
                   </td>
                 </tr>
               }
-            </tbody>
-          </table>
-          <!-- Pagination -->
-           @if (totalPages() > 1) {
-            <div class="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
-                <div class="flex flex-1 justify-between sm:hidden">
-                    <a (click)="changePage(currentPage() - 1)" [class.disabled]="currentPage() === 1" class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4  text-sm font-medium text-gray-700 hover:bg-gray-50">Anterior</a>
-                    <a (click)="changePage(currentPage() + 1)" [class.disabled]="currentPage() === totalPages()" class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4  text-sm font-medium text-gray-700 hover:bg-gray-50">Próxima</a>
-                </div>
-                <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-                    <div>
-                        <p class="text-sm text-gray-700">
-                            Mostrando
-                            <span class="font-medium">{{ (currentPage() - 1) * 10 + 1 }}</span>
-                            a
-                            <span class="font-medium">{{ Math.min(currentPage() * 10, filteredAndSortedVendas().length) }}</span>
-                            de
-                            <span class="font-medium">{{ filteredAndSortedVendas().length }}</span>
-                            resultados
-                        </p>
-                    </div>
-                    <div>
-                        <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
-                            <a (click)="changePage(currentPage() - 1)" [class.disabled]="currentPage() === 1" class="relative inline-flex items-center rounded-l-md px-2  text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0">
-                                <span class="sr-only">Anterior</span>
-                                <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clip-rule="evenodd" /></svg>
-                            </a>
-                            <!-- Pagination logic can be expanded here to show more page numbers -->
-                            <span class="relative inline-flex items-center px-4  text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300">Página {{ currentPage() }} de {{ totalPages() }}</span>
-                            <a (click)="changePage(currentPage() + 1)" [class.disabled]="currentPage() === totalPages()" class="relative inline-flex items-center rounded-r-md px-2  text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0">
-                                <span class="sr-only">Próxima</span>
-                                <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" /></svg>
-                            </a>
-                        </nav>
-                    </div>
-                </div>
+            } @else {
+              <tr>
+                <td colspan="7" class="text-center p-8">
+                  <div class="flex flex-col items-center text-gray-500">
+                    <svg class="w-12 h-12" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                    </svg>
+                    <p class="mt-4 text-lg">Nenhuma venda encontrada</p>
+                    <p class="text-sm">Tente ajustar seus filtros de busca.</p>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+
+        <!-- Paginação -->
+        @if (totalPages() > 1) {
+          <div class="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
+            <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+              <p class="text-sm text-gray-700">
+                Mostrando
+                <span class="font-medium">{{ (currentPage() - 1) * 10 + 1 }}</span>
+                a
+                <span class="font-medium">{{ currentPage() * 10 > filteredAndSortedVendas().length ? filteredAndSortedVendas().length : currentPage() * 10 }}</span>
+                de
+                <span class="font-medium">{{ filteredAndSortedVendas().length }}</span>
+                resultados
+              </p>
+              <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm">
+                <a (click)="changePage(currentPage() - 1)" class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 cursor-pointer">
+                  <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clip-rule="evenodd" /></svg>
+                </a>
+                <span class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300">
+                  Página {{ currentPage() }} de {{ totalPages() }}
+                </span>
+                <a (click)="changePage(currentPage() + 1)" class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 cursor-pointer">
+                  <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" /></svg>
+                </a>
+              </nav>
             </div>
-          }
-        </div>
+          </div>
+        }
       </div>
-    </div>
+    }
+  </div>
+</div>
