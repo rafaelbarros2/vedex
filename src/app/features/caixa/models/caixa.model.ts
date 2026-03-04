@@ -25,6 +25,7 @@ export interface Caixa {
   diferenca?: number; // Sobra (+) ou Falta (-)
   status: StatusCaixa;
   operador: string;
+  identificadorPdv?: string;
   observacoes?: string;
 }
 

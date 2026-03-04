@@ -7,6 +7,7 @@ import { CarrinhoItem } from '../../../shared/models/carrinho.model';
 import { Venda } from '../../../shared/models/venda.model';
 import { VendaHistorico } from '../../../shared/models/venda-historico.model';
 import { HistoricoService } from './historico.service';
+import { AuthService } from '../../../core/auth/auth.service';
 import { environment } from '../../../../environments/environment';
 
 @Injectable({
@@ -14,6 +15,7 @@ import { environment } from '../../../../environments/environment';
 })
 export class PdvService {
   private http = inject(HttpClient);
+  private authService = inject(AuthService);
   private apiUrl = environment.apiUrl;
 
   // Produtos carregados da API
@@ -90,7 +92,7 @@ export class PdvService {
           numeroVenda: vendaDto.numeroVenda,
           data: agora,
           hora: agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-          operador: vendaDto.usuario?.nome || 'Operador',
+          operador: vendaDto.usuario?.nome || this.authService.userInfo()?.fullName || 'Operador',
           items: itensCarrinho.map(item => ({
             id: item.produtoId,
             nome: item.nome,

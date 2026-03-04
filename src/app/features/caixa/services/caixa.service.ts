@@ -83,10 +83,10 @@ export class CaixaService {
   }
 
   // Abrir caixa
-  abrirCaixa(valorAbertura: number, observacoes?: string): Observable<Caixa> {
+  abrirCaixa(valorAbertura: number, identificadorPdv?: string, observacoes?: string): Observable<Caixa> {
     return this.http.post<any>(
       `${this.apiUrl}/abrir?usuarioId=${this.usuarioId}`,
-      { valorAbertura, observacoes }
+      { valorAbertura, identificadorPdv, observacoes }
     ).pipe(
       map(dto => this.converterCaixaDTO(dto)),
       tap(caixa => {
@@ -253,6 +253,7 @@ export class CaixaService {
       diferenca: dto.diferenca ? parseFloat(dto.diferenca) : undefined,
       status: dto.status?.toLowerCase() as StatusCaixa || 'aberto',
       operador: dto.operador?.nome || 'Operador',
+      identificadorPdv: dto.identificadorPdv || undefined,
       observacoes: dto.observacoes
     };
   }

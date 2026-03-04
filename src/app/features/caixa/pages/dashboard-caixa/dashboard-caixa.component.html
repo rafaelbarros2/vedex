@@ -18,6 +18,33 @@
     </div>
   </div>
 
+  <!-- Info do PDV (leitura) -->
+  <div class="flex flex-wrap gap-6 p-4 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-xl text-sm">
+    <div class="flex items-center gap-2">
+      <i class="pi pi-desktop text-blue-600"></i>
+      <span class="text-gray-500 dark:text-gray-400">Terminal:</span>
+      <span class="font-semibold text-gray-800 dark:text-gray-100">
+        {{ caixaAtual()?.identificadorPdv || 'Não informado' }}
+      </span>
+    </div>
+    <div class="flex items-center gap-2">
+      <i class="pi pi-dollar text-blue-600"></i>
+      <span class="text-gray-500 dark:text-gray-400">Valor de Abertura:</span>
+      <span class="font-semibold text-gray-800 dark:text-gray-100">
+        R$ {{ formatCurrency(caixaAtual()?.valorAbertura || 0) }}
+      </span>
+    </div>
+    @if (caixaAtual()?.valorFechamentoContado !== undefined) {
+      <div class="flex items-center gap-2">
+        <i class="pi pi-lock text-gray-500"></i>
+        <span class="text-gray-500 dark:text-gray-400">Valor Fechamento:</span>
+        <span class="font-semibold text-gray-800 dark:text-gray-100">
+          R$ {{ formatCurrency(caixaAtual()?.valorFechamentoContado || 0) }}
+        </span>
+      </div>
+    }
+  </div>
+
   <!-- Cards de Resumo -->
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
     <!-- Card: Saldo Atual -->
@@ -437,9 +464,15 @@
   [closable]="false"
 >
   <div class="space-y-4">
-    <!-- Resumo do Caixa -->
+    <!-- Info PDV + Resumo do Caixa -->
     <div class="p-4 bg-blue-50 dark:bg-blue-900 rounded-lg space-y-2">
       <h4 class="font-semibold text-blue-800 dark:text-blue-100 mb-3">Resumo do Caixa</h4>
+      @if (caixaAtual()?.identificadorPdv) {
+        <div class="flex justify-between text-sm">
+          <span class="text-gray-600 dark:text-gray-400">Terminal (PDV):</span>
+          <span class="font-medium">{{ caixaAtual()?.identificadorPdv }}</span>
+        </div>
+      }
       <div class="flex justify-between text-sm">
         <span class="text-gray-600 dark:text-gray-400">Troco Inicial:</span>
         <span class="font-medium">R$ {{ formatCurrency(caixaAtual()?.valorAbertura || 0) }}</span>

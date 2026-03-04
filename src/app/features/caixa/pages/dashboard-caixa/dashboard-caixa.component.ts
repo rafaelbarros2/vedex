@@ -17,6 +17,7 @@ import { DialogModule } from 'primeng/dialog';
 import { CalendarModule } from 'primeng/calendar';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
+import { TooltipModule } from 'primeng/tooltip';
 import { CaixaService } from '../../services/caixa.service';
 import { Lancamento, TipoLancamento, FormaPagamento } from '../../models/caixa.model';
 
@@ -37,7 +38,8 @@ import { Lancamento, TipoLancamento, FormaPagamento } from '../../models/caixa.m
     TagModule,
     DialogModule,
     CalendarModule,
-    ToastModule
+    ToastModule,
+    TooltipModule
   ],
   providers: [MessageService],
   templateUrl: './dashboard-caixa.component.html',
@@ -217,7 +219,6 @@ export class DashboardCaixaComponent implements OnInit {
 
           this.showFechamentoDialog = false;
 
-          // Redirecionar para abertura após 2 segundos
           setTimeout(() => {
             this.router.navigate(['/caixa/abertura']);
           }, 2000);
